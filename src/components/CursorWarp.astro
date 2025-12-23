@@ -377,23 +377,27 @@
           // Effect strength based on hover/ripple
           float effectStrength = max(sizeFactor, inRing * 0.5);
           
-          if (effectStrength > 0.001) {
+          // Check if MOUSE is close enough to the image to pick up colors
+          vec2 mouseRel = mouse - headerPos;
+          vec2 mouseOnImage = clamp(mouseRel, vec2(0.0), headerSize);
+          float mouseDistFromImage = distance(mouseRel, mouseOnImage);
+          
+          // Only apply color effect if mouse is within pickup range of the image
+          if (effectStrength > 0.001 && mouseDistFromImage < u_colorPickupRange) {
             // Positions relative to header
             vec2 dotRel = cellCenter - headerPos;
-            vec2 mouseRel = mouse - headerPos;
             
-            // Where mouse touches the image (clamped to bounds)
-            vec2 mouseOnImage = clamp(mouseRel, vec2(0.0), headerSize - vec2(1.0));
+            // Clamp mouse position to image bounds for sampling
+            vec2 mouseOnImageClamped = clamp(mouseRel, vec2(0.0), headerSize - vec2(1.0));
             
-            // For sampling: ALWAYS use where the mouse is on the image
-            // This makes colors radiate outward from cursor position
+            // For sampling: use where the mouse is on the image
             // with slight offset based on dot direction for variety
             vec2 dotDir = cellCenter - mouse;
             float dotDist = length(dotDir);
             vec2 normalizedDir = dotDist > 0.001 ? dotDir / dotDist : vec2(0.0);
             
             // Sample from mouse position, offset slightly in dot direction
-            vec2 samplePos = mouseOnImage + normalizedDir * min(dotDist * 0.2, length(headerSize) * 0.3);
+            vec2 samplePos = mouseOnImageClamped + normalizedDir * min(dotDist * 0.2, length(headerSize) * 0.3);
             samplePos = clamp(samplePos, vec2(0.0), headerSize - vec2(1.0));
             
             // Convert to UV
@@ -406,17 +410,16 @@
             float minC = min(min(headerColor.r, headerColor.g), headerColor.b);
             float saturation = (maxC > 0.0) ? (maxC - minC) / maxC : 0.0;
             
-            // Include pixels that are either:
-            // 1. Colorful (high saturation) - the colored parts of the image
-            // 2. Very bright (white text) - high brightness even with low saturation
+            // Include colorful pixels OR very bright (white) pixels
             // Exclude: gray bars (medium brightness, low saturation)
             float isColorful = smoothstep(0.1, 0.3, saturation);
-            float isWhite = smoothstep(0.7, 0.9, brightness); // White text is very bright
+            float isWhite = smoothstep(0.7, 0.9, brightness);
             float colorfulness = max(isColorful, isWhite) * smoothstep(0.08, 0.2, brightness);
             
-            // NO distance-from-image falloff - colors spread to ALL affected dots
-            // The hover effect itself controls the boundary
-            float finalVibrancy = effectStrength * colorfulness * u_colorVibrancy;
+            // Fade based on mouse distance from image (smooth transition)
+            float mouseFade = 1.0 - smoothstep(0.0, u_colorPickupRange, mouseDistFromImage);
+            
+            float finalVibrancy = effectStrength * colorfulness * mouseFade * u_colorVibrancy;
             
             dotColor = mix(dotColor, headerColor.rgb, clamp(finalVibrancy, 0.0, 1.0));
           }
