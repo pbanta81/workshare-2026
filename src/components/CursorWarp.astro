@@ -1,0 +1,679 @@
+---
+// Cursor shader with color gradient, repel, and live controls
+---
+
+<canvas id="warp-canvas"></canvas>
+
+<!-- Control Panel -->
+<div id="shader-controls">
+  <div class="control-header">
+    <span>Shader Controls</span>
+    <button id="toggle-controls">−</button>
+  </div>
+  <div class="control-body">
+    <div class="control-section">
+      <h4>Hover Effect</h4>
+      <label>
+        Radius: <span id="hoverRadiusVal">200</span>
+        <input type="range" id="hoverRadius" min="50" max="400" value="200">
+      </label>
+      <label>
+        Fade Distance: <span id="hoverFadeVal">100</span>
+        <input type="range" id="hoverFade" min="20" max="300" value="100">
+      </label>
+      <label>
+        Max Scale: <span id="hoverMaxScaleVal">15</span>
+        <input type="range" id="hoverMaxScale" min="2" max="16" value="15">
+      </label>
+      <label>
+        Repel Strength: <span id="repelStrengthVal">19</span>
+        <input type="range" id="repelStrength" min="0" max="30" value="19">
+      </label>
+      <label>
+        Color Intensity: <span id="colorIntensityVal">0</span>
+        <input type="range" id="colorIntensity" min="0" max="1" value="0" step="0.05">
+      </label>
+      <label>
+        Gumminess: <span id="gumminessVal">0.08</span>
+        <input type="range" id="gumminess" min="0.02" max="0.3" value="0.08" step="0.01">
+      </label>
+    </div>
+    <div class="control-section">
+      <h4>Click Ripple</h4>
+      <label>
+        Speed: <span id="rippleSpeedVal">1400</span>
+        <input type="range" id="rippleSpeed" min="200" max="2000" value="1400">
+      </label>
+      <label>
+        Width: <span id="rippleWidthVal">200</span>
+        <input type="range" id="rippleWidth" min="20" max="400" value="200">
+      </label>
+      <label>
+        Duration: <span id="rippleDurationVal">1.0</span>s
+        <input type="range" id="rippleDuration" min="0.3" max="4" value="1.0" step="0.1">
+      </label>
+      <label>
+        Color Intensity: <span id="rippleColorIntensityVal">0</span>
+        <input type="range" id="rippleColorIntensity" min="0" max="1" value="0" step="0.05">
+      </label>
+    </div>
+    <div class="control-section">
+      <h4>Grid</h4>
+      <label>
+        Base Dot Size: <span id="baseDotSizeVal">3</span>
+        <input type="range" id="baseDotSize" min="1" max="6" value="3">
+      </label>
+      <label>
+        Dot Roundness: <span id="dotRoundnessVal">0</span>
+        <input type="range" id="dotRoundness" min="0" max="1" value="0" step="0.1">
+      </label>
+    </div>
+    <div class="control-section">
+      <h4>Image Color Pickup</h4>
+      <label>
+        Range: <span id="colorPickupRangeVal">400</span>px
+        <input type="range" id="colorPickupRange" min="50" max="800" value="400">
+      </label>
+      <label>
+        Vibrancy: <span id="colorVibrancyVal">0.8</span>
+        <input type="range" id="colorVibrancy" min="0" max="1" value="0.8" step="0.05">
+      </label>
+    </div>
+  </div>
+</div>
+
+<style>
+  #warp-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+  }
+  
+  #shader-controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(13, 14, 17, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 12px;
+    color: #a1a1aa;
+    z-index: 9999;
+    min-width: 220px;
+    backdrop-filter: blur(10px);
+  }
+  
+  .control-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e4e4e7;
+    font-weight: 500;
+  }
+  
+  .control-header button {
+    background: none;
+    border: none;
+    color: #a1a1aa;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0 4px;
+  }
+  
+  .control-body {
+    padding: 12px 16px;
+  }
+  
+  .control-body.collapsed {
+    display: none;
+  }
+  
+  .control-section {
+    margin-bottom: 16px;
+  }
+  
+  .control-section:last-child {
+    margin-bottom: 0;
+  }
+  
+  .control-section h4 {
+    margin: 0 0 8px 0;
+    color: #22d3ee;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 8px;
+  }
+  
+  input[type="range"] {
+    width: 100%;
+    margin-top: 4px;
+    accent-color: #22d3ee;
+  }
+</style>
+
+<script>
+  const canvas = document.getElementById('warp-canvas') as HTMLCanvasElement;
+  const gl = canvas.getContext('webgl', { alpha: false });
+  
+  // Control panel state
+  const params = {
+    hoverRadius: 200,
+    hoverFade: 100,
+    hoverMaxScale: 15,
+    repelStrength: 19,
+    colorIntensity: 0,
+    gumminess: 0.08,
+    rippleSpeed: 1400,
+    rippleWidth: 200,
+    rippleDuration: 1.0,
+    rippleColorIntensity: 0,
+    baseDotSize: 3,
+    dotRoundness: 0,
+    colorPickupRange: 400,
+    colorVibrancy: 0.8,
+  };
+  
+  // Setup control panel
+  function setupControls() {
+    const toggle = document.getElementById('toggle-controls')!;
+    const body = document.querySelector('.control-body')!;
+    
+    toggle.addEventListener('click', () => {
+      body.classList.toggle('collapsed');
+      toggle.textContent = body.classList.contains('collapsed') ? '+' : '−';
+    });
+    
+    const controls = [
+      'hoverRadius', 'hoverFade', 'hoverMaxScale', 'repelStrength', 'colorIntensity', 'gumminess',
+      'rippleSpeed', 'rippleWidth', 'rippleDuration', 'rippleColorIntensity', 'baseDotSize', 'dotRoundness',
+      'colorPickupRange', 'colorVibrancy'
+    ];
+    
+    controls.forEach(id => {
+      const input = document.getElementById(id) as HTMLInputElement;
+      const valSpan = document.getElementById(id + 'Val')!;
+      
+      input.addEventListener('input', () => {
+        const val = parseFloat(input.value);
+        (params as any)[id] = val;
+        valSpan.textContent = val.toString();
+      });
+    });
+  }
+  
+  setupControls();
+  
+  if (!gl) {
+    console.error('WebGL not supported');
+  } else {
+    const vertexShaderSource = `
+      attribute vec2 a_position;
+      
+      void main() {
+        gl_Position = vec4(a_position, 0.0, 1.0);
+      }
+    `;
+
+    const fragmentShaderSource = `
+      precision highp float;
+      
+      uniform vec2 u_resolution;
+      uniform vec2 u_mouse;
+      uniform float u_mouseActive;
+      uniform float u_time;
+      uniform vec2 u_clickPos;
+      uniform float u_clickTime;
+      
+      // Image texture sampling
+      uniform sampler2D u_headerTexture;
+      uniform vec4 u_headerBounds; // x, y, width, height in pixels (y is flipped for WebGL)
+      uniform float u_headerReady;
+      
+      // Controllable params
+      uniform float u_hoverRadius;
+      uniform float u_hoverFade;
+      uniform float u_hoverMaxScale;
+      uniform float u_repelStrength;
+      uniform float u_colorIntensity;
+      uniform float u_rippleSpeed;
+      uniform float u_rippleWidth;
+      uniform float u_rippleDuration;
+      uniform float u_rippleColorIntensity;
+      uniform float u_baseDotSize;
+      uniform float u_dotRoundness;
+      uniform float u_colorPickupRange;
+      uniform float u_colorVibrancy;
+      
+      // Hexagonal grid constants
+      const float HEX_SIZE = 16.0; // Horizontal spacing
+      const float HEX_HEIGHT = HEX_SIZE * 0.866; // Vertical spacing (sqrt(3)/2 for true hex)
+      
+      // Colors
+      const vec3 BG_COLOR = vec3(0.051, 0.055, 0.067);
+      const vec3 DOT_COLOR = vec3(0.110, 0.114, 0.125);
+      const vec3 HOVER_COLOR = vec3(0.4, 0.45, 0.5); // Much brighter for visible gradient
+      
+      // Helper to get hex cell center
+      vec2 getHexCenter(float col, float row) {
+        float offset = mod(row, 2.0) * (HEX_SIZE * 0.5);
+        return vec2(
+          col * HEX_SIZE + offset + HEX_SIZE * 0.5,
+          row * HEX_HEIGHT + HEX_HEIGHT * 0.5
+        );
+      }
+      
+      void main() {
+        vec2 uv = gl_FragCoord.xy;
+        vec2 mouse = u_mouse;
+        float totalRadius = u_hoverRadius + u_hoverFade;
+        
+        // Find the closest hex cell center
+        // First, get approximate row and column
+        float row = floor(uv.y / HEX_HEIGHT);
+        float rowOffset = mod(row, 2.0) * (HEX_SIZE * 0.5);
+        float col = floor((uv.x - rowOffset) / HEX_SIZE);
+        
+        // Check this cell and neighboring cells to find the closest center
+        vec2 cellCenter = getHexCenter(col, row);
+        float minDist = distance(uv, cellCenter);
+        
+        // Check all 6 neighbors + adjacent row possibilities
+        for (float dr = -1.0; dr <= 1.0; dr += 1.0) {
+          for (float dc = -1.0; dc <= 1.0; dc += 1.0) {
+            vec2 neighbor = getHexCenter(col + dc, row + dr);
+            float d = distance(uv, neighbor);
+            if (d < minDist) {
+              minDist = d;
+              cellCenter = neighbor;
+            }
+          }
+        }
+        
+        // ===== REPEL EFFECT =====
+        // Calculate repel BEFORE we use cellCenter for other calculations
+        float cellDist = distance(cellCenter, mouse);
+        
+        // Repel: push dot away from cursor
+        vec2 repelledCenter = cellCenter;
+        if (u_repelStrength > 0.0 && cellDist < totalRadius && cellDist > 0.001) {
+          // Direction away from mouse
+          vec2 awayDir = normalize(cellCenter - mouse);
+          // Strength: stronger when closer (inverse relationship)
+          float repelFactor = 1.0 - (cellDist / totalRadius);
+          repelFactor = repelFactor * repelFactor; // Quadratic falloff
+          // Apply repel offset
+          repelledCenter = cellCenter + awayDir * u_repelStrength * repelFactor * u_mouseActive;
+        }
+        
+        // Recalculate distance from repelled position
+        float repelledDist = distance(repelledCenter, mouse);
+        
+        // Distance from this PIXEL to mouse (for COLOR - smooth gradient)
+        float pixelDist = distance(uv, mouse);
+        
+        // ===== HOVER EFFECT =====
+        // Size factor based on repelled cell distance (dots grow near cursor)
+        float sizeFactor = (1.0 - clamp(repelledDist / totalRadius, 0.0, 1.0)) * u_mouseActive;
+        sizeFactor = sizeFactor * sizeFactor;
+        
+        // Color factor based on PIXEL distance - linear 100% at center to 0% at edge
+        float colorFactor = (1.0 - clamp(pixelDist / totalRadius, 0.0, 1.0)) * u_mouseActive;
+        
+        // Local position relative to REPELLED center
+        vec2 localPos = uv - repelledCenter;
+        
+        // ===== SCALE EFFECT =====
+        float scaleRange = u_hoverMaxScale - u_baseDotSize;
+        float dotSize = u_baseDotSize + sizeFactor * scaleRange;
+        
+        // ===== CLICK RIPPLE EFFECT =====
+        float timeSinceClick = u_time - u_clickTime;
+        float distToClick = distance(cellCenter, u_clickPos);
+        float rippleRadius = timeSinceClick * u_rippleSpeed;
+        
+        float ringDist = abs(distToClick - rippleRadius);
+        float inRing = 1.0 - smoothstep(0.0, u_rippleWidth, ringDist);
+        float rippleFade = 1.0 - smoothstep(0.0, u_rippleDuration, timeSinceClick);
+        inRing *= rippleFade;
+        
+        float rippleScale = inRing * scaleRange * 0.8;
+        dotSize = max(dotSize, u_baseDotSize + rippleScale);
+        
+        // ===== DRAW DOT (blend between square and circle) =====
+        float halfSize = dotSize * 0.5;
+        
+        // Square distance (Chebyshev)
+        float squareDist = max(abs(localPos.x), abs(localPos.y));
+        // Circle distance (Euclidean)
+        float circleDist = length(localPos);
+        // Blend based on roundness
+        float dist = mix(squareDist, circleDist, u_dotRoundness);
+        
+        // ===== COLOR GRADIENT =====
+        // Dot color based on distance - linear gradient from center to edge
+        vec3 dotColor = mix(DOT_COLOR, HOVER_COLOR, colorFactor * u_colorIntensity);
+        
+        // Ripple color effect - capped at hover color intensity (never brighter than hover)
+        float rippleColorEffect = inRing * min(u_rippleColorIntensity, u_colorIntensity);
+        dotColor = mix(dotColor, HOVER_COLOR, rippleColorEffect);
+        
+        // ===== SAMPLE COLOR FROM HEADER IMAGE =====
+        vec2 headerPos = u_headerBounds.xy;
+        vec2 headerSize = u_headerBounds.zw;
+        if (u_headerReady > 0.5 && headerSize.x > 0.0 && headerSize.y > 0.0) {
+          
+          // Effect strength based on hover/ripple
+          float effectStrength = max(sizeFactor, inRing * 0.5);
+          
+          if (effectStrength > 0.001) {
+            // Positions relative to header
+            vec2 dotRel = cellCenter - headerPos;
+            vec2 mouseRel = mouse - headerPos;
+            
+            // Where mouse touches the image (clamped to bounds)
+            vec2 mouseOnImage = clamp(mouseRel, vec2(0.0), headerSize - vec2(1.0));
+            
+            // For sampling: ALWAYS use where the mouse is on the image
+            // This makes colors radiate outward from cursor position
+            // with slight offset based on dot direction for variety
+            vec2 dotDir = cellCenter - mouse;
+            float dotDist = length(dotDir);
+            vec2 normalizedDir = dotDist > 0.001 ? dotDir / dotDist : vec2(0.0);
+            
+            // Sample from mouse position, offset slightly in dot direction
+            vec2 samplePos = mouseOnImage + normalizedDir * min(dotDist * 0.2, length(headerSize) * 0.3);
+            samplePos = clamp(samplePos, vec2(0.0), headerSize - vec2(1.0));
+            
+            // Convert to UV
+            vec2 texUV = vec2(samplePos.x / headerSize.x, 1.0 - (samplePos.y / headerSize.y));
+            vec4 headerColor = texture2D(u_headerTexture, texUV);
+            
+            // Check brightness and saturation
+            float brightness = (headerColor.r + headerColor.g + headerColor.b) / 3.0;
+            float maxC = max(max(headerColor.r, headerColor.g), headerColor.b);
+            float minC = min(min(headerColor.r, headerColor.g), headerColor.b);
+            float saturation = (maxC > 0.0) ? (maxC - minC) / maxC : 0.0;
+            
+            // Include pixels that are either:
+            // 1. Colorful (high saturation) - the colored parts of the image
+            // 2. Very bright (white text) - high brightness even with low saturation
+            // Exclude: gray bars (medium brightness, low saturation)
+            float isColorful = smoothstep(0.1, 0.3, saturation);
+            float isWhite = smoothstep(0.7, 0.9, brightness); // White text is very bright
+            float colorfulness = max(isColorful, isWhite) * smoothstep(0.08, 0.2, brightness);
+            
+            // NO distance-from-image falloff - colors spread to ALL affected dots
+            // The hover effect itself controls the boundary
+            float finalVibrancy = effectStrength * colorfulness * u_colorVibrancy;
+            
+            dotColor = mix(dotColor, headerColor.rgb, clamp(finalVibrancy, 0.0, 1.0));
+          }
+        }
+        
+        // ===== SOFT-EDGED DOTS for smooth gradient appearance =====
+        // Instead of hard edge (inDot ? dotColor : BG_COLOR), use soft blending
+        // This creates anti-aliased dots that visually blend into a smooth gradient
+        float edgeSoftness = 1.5; // pixels of softness at dot edge
+        float dotAlpha = 1.0 - smoothstep(halfSize - edgeSoftness, halfSize + edgeSoftness, dist);
+        
+        // Blend dot color with background based on soft alpha
+        vec3 color = mix(BG_COLOR, dotColor, dotAlpha);
+        
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `;
+
+    function compileShader(source: string, type: number) {
+      const shader = gl!.createShader(type)!;
+      gl!.shaderSource(shader, source);
+      gl!.compileShader(shader);
+      
+      if (!gl!.getShaderParameter(shader, gl!.COMPILE_STATUS)) {
+        console.error('Shader compile error:', gl!.getShaderInfoLog(shader));
+        return null;
+      }
+      return shader;
+    }
+
+    const vertexShader = compileShader(vertexShaderSource, gl.VERTEX_SHADER);
+    const fragmentShader = compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER);
+
+    if (!vertexShader || !fragmentShader) {
+      throw new Error('Failed to compile shaders');
+    }
+
+    const program = gl.createProgram()!;
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.error('Program link error:', gl.getProgramInfoLog(program));
+    }
+
+    gl.useProgram(program);
+
+    const positions = new Float32Array([
+      -1, -1,  1, -1,  -1, 1,
+      -1,  1,  1, -1,   1, 1,
+    ]);
+
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+    const positionLocation = gl.getAttribLocation(program, 'a_position');
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+    // Uniforms
+    const resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
+    const mouseLocation = gl.getUniformLocation(program, 'u_mouse');
+    const mouseActiveLocation = gl.getUniformLocation(program, 'u_mouseActive');
+    const timeLocation = gl.getUniformLocation(program, 'u_time');
+    const clickPosLocation = gl.getUniformLocation(program, 'u_clickPos');
+    const clickTimeLocation = gl.getUniformLocation(program, 'u_clickTime');
+    
+    // Header texture uniforms
+    const headerTextureLocation = gl.getUniformLocation(program, 'u_headerTexture');
+    const headerBoundsLocation = gl.getUniformLocation(program, 'u_headerBounds');
+    const headerReadyLocation = gl.getUniformLocation(program, 'u_headerReady');
+    
+    const hoverRadiusLocation = gl.getUniformLocation(program, 'u_hoverRadius');
+    const hoverFadeLocation = gl.getUniformLocation(program, 'u_hoverFade');
+    const hoverMaxScaleLocation = gl.getUniformLocation(program, 'u_hoverMaxScale');
+    const repelStrengthLocation = gl.getUniformLocation(program, 'u_repelStrength');
+    const colorIntensityLocation = gl.getUniformLocation(program, 'u_colorIntensity');
+    const rippleSpeedLocation = gl.getUniformLocation(program, 'u_rippleSpeed');
+    const rippleWidthLocation = gl.getUniformLocation(program, 'u_rippleWidth');
+    const rippleDurationLocation = gl.getUniformLocation(program, 'u_rippleDuration');
+    const rippleColorIntensityLocation = gl.getUniformLocation(program, 'u_rippleColorIntensity');
+    const baseDotSizeLocation = gl.getUniformLocation(program, 'u_baseDotSize');
+    const dotRoundnessLocation = gl.getUniformLocation(program, 'u_dotRoundness');
+    const colorPickupRangeLocation = gl.getUniformLocation(program, 'u_colorPickupRange');
+    const colorVibrancyLocation = gl.getUniformLocation(program, 'u_colorVibrancy');
+
+    // State
+    let mouseX = -9999;
+    let mouseY = -9999;
+    let targetMouseX = -9999;
+    let targetMouseY = -9999;
+    let mouseActive = 0;
+    let targetMouseActive = 0;
+    let clickX = -9999;
+    let clickY = -9999;
+    let clickTime = -9999;
+
+    document.addEventListener('mousemove', (e) => {
+      const dpr = window.devicePixelRatio || 1;
+      targetMouseX = e.clientX * dpr;
+      targetMouseY = (window.innerHeight - e.clientY) * dpr;
+      targetMouseActive = 1;
+      // Snap position immediately when re-entering
+      if (mouseActive < 0.1) {
+        mouseX = targetMouseX;
+        mouseY = targetMouseY;
+      }
+    });
+
+    document.addEventListener('mouseleave', () => {
+      targetMouseActive = 0;
+    });
+
+    document.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('#shader-controls')) return;
+      
+      const dpr = window.devicePixelRatio || 1;
+      clickX = e.clientX * dpr;
+      clickY = (window.innerHeight - e.clientY) * dpr;
+      clickTime = (Date.now() - startTime) / 1000;
+    });
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      gl!.viewport(0, 0, canvas.width, canvas.height);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    // ===== HEADER TEXTURE SETUP =====
+    let headerTexture: WebGLTexture | null = null;
+    let headerReady = 0;
+    let headerBounds = { x: 0, y: 0, width: 0, height: 0 };
+    
+    function updateHeaderBounds() {
+      const headerImg = document.querySelector('img[src*="ansi-heading"]') as HTMLImageElement;
+      if (headerImg) {
+        const rect = headerImg.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        // Convert to WebGL coordinates (y-flipped)
+        headerBounds = {
+          x: rect.left * dpr,
+          y: (window.innerHeight - rect.bottom) * dpr, // Flip Y for WebGL
+          width: rect.width * dpr,
+          height: rect.height * dpr
+        };
+        console.log('Updated header bounds:', headerBounds, 'rect:', rect, 'dpr:', dpr);
+      }
+    }
+    
+    function loadHeaderTexture() {
+      const headerImg = document.querySelector('img[src*="ansi-heading"]') as HTMLImageElement;
+      if (!headerImg) {
+        // Try again later if image not found yet
+        setTimeout(loadHeaderTexture, 100);
+        return;
+      }
+      
+      // Create offscreen canvas to render the image
+      const offscreen = document.createElement('canvas');
+      const ctx = offscreen.getContext('2d')!;
+      
+      const loadImage = () => {
+        // Set canvas size to image natural size
+        offscreen.width = headerImg.naturalWidth || headerImg.width;
+        offscreen.height = headerImg.naturalHeight || headerImg.height;
+        
+        // Draw the image
+        ctx.drawImage(headerImg, 0, 0);
+        
+        // Create WebGL texture
+        headerTexture = gl!.createTexture();
+        gl!.bindTexture(gl!.TEXTURE_2D, headerTexture);
+        
+        // Upload the canvas to the texture
+        gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGBA, gl!.RGBA, gl!.UNSIGNED_BYTE, offscreen);
+        
+        // Set texture parameters
+        gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_WRAP_S, gl!.CLAMP_TO_EDGE);
+        gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_WRAP_T, gl!.CLAMP_TO_EDGE);
+        gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MIN_FILTER, gl!.LINEAR);
+        gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MAG_FILTER, gl!.LINEAR);
+        
+        headerReady = 1;
+        updateHeaderBounds();
+        console.log('Header texture loaded:', offscreen.width, 'x', offscreen.height);
+        console.log('Header bounds:', headerBounds);
+      };
+      
+      if (headerImg.complete) {
+        loadImage();
+      } else {
+        headerImg.onload = loadImage;
+      }
+    }
+    
+    // Load texture and update bounds on resize/scroll
+    loadHeaderTexture();
+    window.addEventListener('resize', updateHeaderBounds);
+    window.addEventListener('scroll', updateHeaderBounds);
+
+    let startTime = Date.now();
+    
+    function render() {
+      const time = (Date.now() - startTime) / 1000;
+      
+      // Only update position when mouse is active
+      if (targetMouseActive > 0.5) {
+        mouseX += (targetMouseX - mouseX) * params.gumminess;
+        mouseY += (targetMouseY - mouseY) * params.gumminess;
+      }
+      
+      // Smoothly fade mouseActive in/out
+      mouseActive += (targetMouseActive - mouseActive) * 0.08;
+
+      gl!.uniform2f(resolutionLocation, canvas.width, canvas.height);
+      gl!.uniform2f(mouseLocation, mouseX, mouseY);
+      gl!.uniform1f(mouseActiveLocation, mouseActive);
+      gl!.uniform1f(timeLocation, time);
+      gl!.uniform2f(clickPosLocation, clickX, clickY);
+      gl!.uniform1f(clickTimeLocation, clickTime);
+      
+      // Header texture uniforms
+      if (headerTexture) {
+        gl!.activeTexture(gl!.TEXTURE0);
+        gl!.bindTexture(gl!.TEXTURE_2D, headerTexture);
+        gl!.uniform1i(headerTextureLocation, 0);
+      }
+      gl!.uniform4f(headerBoundsLocation, headerBounds.x, headerBounds.y, headerBounds.width, headerBounds.height);
+      gl!.uniform1f(headerReadyLocation, headerReady);
+      
+      // Update from control panel
+      gl!.uniform1f(hoverRadiusLocation, params.hoverRadius);
+      gl!.uniform1f(hoverFadeLocation, params.hoverFade);
+      gl!.uniform1f(hoverMaxScaleLocation, params.hoverMaxScale);
+      gl!.uniform1f(repelStrengthLocation, params.repelStrength);
+      gl!.uniform1f(colorIntensityLocation, params.colorIntensity);
+      gl!.uniform1f(rippleSpeedLocation, params.rippleSpeed);
+      gl!.uniform1f(rippleWidthLocation, params.rippleWidth);
+      gl!.uniform1f(rippleDurationLocation, params.rippleDuration);
+      gl!.uniform1f(rippleColorIntensityLocation, params.rippleColorIntensity);
+      gl!.uniform1f(baseDotSizeLocation, params.baseDotSize);
+      gl!.uniform1f(dotRoundnessLocation, params.dotRoundness);
+      gl!.uniform1f(colorPickupRangeLocation, params.colorPickupRange);
+      gl!.uniform1f(colorVibrancyLocation, params.colorVibrancy);
+
+      gl!.drawArrays(gl!.TRIANGLES, 0, 6);
+      requestAnimationFrame(render);
+    }
+
+    render();
+  }
+</script>
