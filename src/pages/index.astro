@@ -187,38 +187,38 @@ import Layout from '../layouts/Layout.astro';
   
   /* White flash glitch effect for success state */
   .glitch-container.flash-white .glitch-base {
-    animation: flash-white-base 400ms steps(4) forwards;
+    animation: flash-white-base 600ms ease-out forwards;
   }
   
   .glitch-container.flash-white .glitch-r,
   .glitch-container.flash-white .glitch-b {
     opacity: 0.9;
-    animation: flash-white-layer 400ms steps(3) forwards;
+    animation: flash-white-layer 600ms ease-out forwards;
   }
   
   @keyframes flash-white-base {
     0% {
-      filter: brightness(1);
+      filter: brightness(1) saturate(1);
       transform: translate(0, 0);
+    }
+    8% {
+      filter: brightness(8) saturate(0);
+      transform: translate(-2px, 0);
     }
     15% {
-      filter: brightness(3) saturate(0);
-      transform: translate(-3px, 0);
-    }
-    30% {
-      filter: brightness(1.5) saturate(0.5);
+      filter: brightness(15) saturate(0);
       transform: translate(2px, 0);
     }
-    50% {
-      filter: brightness(5) saturate(0);
+    25% {
+      filter: brightness(3) saturate(0.3);
       transform: translate(0, 0);
     }
-    70% {
-      filter: brightness(2) saturate(0);
-      transform: translate(-1px, 0);
+    50% {
+      filter: brightness(1.5) saturate(0.7);
+      transform: translate(0, 0);
     }
     100% {
-      filter: brightness(100) saturate(0);
+      filter: brightness(1) saturate(1);
       transform: translate(0, 0);
     }
   }
@@ -227,28 +227,32 @@ import Layout from '../layouts/Layout.astro';
     0% {
       filter: brightness(1) saturate(2);
       clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-      transform: translate(4px, 0);
+      transform: translate(3px, 0);
+      opacity: 0.9;
     }
-    25% {
-      filter: brightness(3) saturate(0);
-      clip-path: polygon(0 20%, 100% 20%, 100% 80%, 0 80%);
-      transform: translate(-6px, 0);
+    8% {
+      filter: brightness(10) saturate(0);
+      clip-path: polygon(0 15%, 100% 15%, 100% 85%, 0 85%);
+      transform: translate(-4px, 0);
+      opacity: 1;
     }
-    50% {
-      filter: brightness(5) saturate(0);
+    15% {
+      filter: brightness(15) saturate(0);
       clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
       transform: translate(2px, 0);
+      opacity: 1;
     }
-    75% {
-      filter: brightness(10) saturate(0);
-      clip-path: polygon(0 10%, 100% 10%, 100% 90%, 0 90%);
-      transform: translate(-2px, 0);
-    }
-    100% {
-      filter: brightness(100) saturate(0);
+    30% {
+      filter: brightness(3) saturate(0.5);
       clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
       transform: translate(0, 0);
-      opacity: 1;
+      opacity: 0.5;
+    }
+    100% {
+      filter: brightness(1) saturate(1);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      transform: translate(0, 0);
+      opacity: 0;
     }
   }
   
@@ -521,7 +525,10 @@ import Layout from '../layouts/Layout.astro';
     // Add flash-white class
     container.classList.add('flash-white');
     
-    // Don't remove - stays white (for redirect transition)
+    // Remove after animation completes (600ms)
+    setTimeout(() => {
+      container.classList.remove('flash-white');
+    }, 600);
   }
   
   if (container) {
