@@ -4,7 +4,7 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout>
   <!-- Hero Section -->
-  <section class="min-h-[100dvh] flex flex-col justify-center md:items-center safe-area-override">
+  <section class="min-h-[100dvh] flex flex-col pt-[15vh] md:pt-0 md:justify-center md:items-center safe-area-override">
     <div class="w-full md:max-w-4xl md:mx-auto md:px-6 animate-fade-in opacity-0">
       <div class="glitch-container" id="glitch-container">
         <img 
@@ -748,39 +748,4 @@ import Layout from '../layouts/Layout.astro';
     });
   }
   
-  // iOS keyboard fix - forcibly prevent any scrolling
-  let ticking = false;
-  const forceScrollTop = () => {
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-  };
-  
-  // Immediately reset on any scroll
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(() => {
-        forceScrollTop();
-        ticking = false;
-      });
-    }
-  }, { passive: true });
-  
-  // Also prevent touchmove when input is focused
-  document.addEventListener('touchmove', (e) => {
-    if (document.activeElement?.tagName === 'INPUT') {
-      e.preventDefault();
-    }
-  }, { passive: false });
-  
-  // Reset scroll when input focuses
-  const pwInput = document.querySelector('.password-input');
-  if (pwInput) {
-    pwInput.addEventListener('focus', () => {
-      setTimeout(forceScrollTop, 0);
-      setTimeout(forceScrollTop, 100);
-      setTimeout(forceScrollTop, 300);
-    });
-  }
 </script>
