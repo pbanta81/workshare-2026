@@ -698,18 +698,13 @@ import Layout from '../layouts/Layout.astro';
             const passwordContainer = document.querySelector('.password-container') as HTMLElement;
             if (passwordContainer) {
               passwordContainer.classList.add('fade-out');
-              
-              // Remove from DOM after fade completes to clear password manager artifacts
-              setTimeout(() => {
-                passwordContainer.remove();
-              }, 1500);
             }
             
             // After input fade completes (1500ms), move heading to top
             setTimeout(() => {
               const glitchContainer = document.getElementById('glitch-container') as HTMLElement;
               if (glitchContainer) {
-                // Calculate how far to move up
+                // Calculate how far to move up BEFORE removing container
                 const rect = glitchContainer.getBoundingClientRect();
                 const currentTop = rect.top;
                 const targetTop = 36;
@@ -717,6 +712,11 @@ import Layout from '../layouts/Layout.astro';
                 
                 // Apply transform
                 glitchContainer.style.transform = `translateY(-${moveDistance}px)`;
+                
+                // NOW remove the password container (after transform is applied)
+                if (passwordContainer) {
+                  passwordContainer.remove();
+                }
               }
               
               // After heading animation completes (2000ms), could load portfolio content
