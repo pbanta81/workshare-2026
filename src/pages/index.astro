@@ -103,30 +103,17 @@ import Layout from '../layouts/Layout.astro';
     display: block;
   }
   
-  /* Mobile: Force everything to full viewport width */
+  /* Mobile: Scale up image to fill viewport (crops empty edges) */
   @media (max-width: 767px) {
-    section.safe-area-override {
-      padding: 0 !important;
-      margin: 0 !important;
-      width: 100vw !important;
-      max-width: 100vw !important;
-    }
-    
-    .animate-fade-in {
-      width: 100vw !important;
-      max-width: 100vw !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-    
     .glitch-container {
-      width: 100vw !important;
-      max-width: 100vw !important;
+      width: 100vw;
+      overflow: hidden;
     }
     
     .glitch-img {
-      width: 100vw !important;
-      max-width: 100vw !important;
+      width: 140vw;
+      max-width: none;
+      margin-left: -20vw;
     }
   }
   
