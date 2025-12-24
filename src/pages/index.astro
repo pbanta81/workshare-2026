@@ -743,4 +743,32 @@ import Layout from '../layouts/Layout.astro';
     });
   }
   
+  // iOS keyboard fix: capture position BEFORE keyboard, restore AFTER
+  const pwInputEl = document.querySelector('.password-input');
+  const sectionEl = document.querySelector('section');
+  let savedTop = 0;
+  
+  if (pwInputEl && sectionEl) {
+    // Capture position on touchstart (before keyboard opens)
+    pwInputEl.addEventListener('touchstart', () => {
+      savedTop = sectionEl.getBoundingClientRect().top;
+    }, { passive: true });
+
+    pwInputEl.addEventListener('focus', () => {
+      // Wait for keyboard, then restore to saved position
+      setTimeout(() => {
+        sectionEl.style.position = 'fixed';
+        sectionEl.style.top = `${savedTop}px`;
+        sectionEl.style.left = '0';
+        sectionEl.style.right = '0';
+      }, 350);
+    });
+
+    pwInputEl.addEventListener('blur', () => {
+      sectionEl.style.position = '';
+      sectionEl.style.top = '';
+      sectionEl.style.left = '';
+      sectionEl.style.right = '';
+    });
+  }
 </script>
