@@ -33,8 +33,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Check up to 10 portfolio passwords
     for (let i = 1; i <= 10; i++) {
-      const storedHash = import.meta.env[`PORTFOLIO_${i}_HASH`];
-      const redirectUrl = import.meta.env[`PORTFOLIO_${i}_URL`];
+      const storedHash = process.env[`PORTFOLIO_${i}_HASH`];
+      const redirectUrl = process.env[`PORTFOLIO_${i}_URL`];
 
       if (storedHash && redirectUrl && storedHash === submittedHash) {
         matchedUrl = redirectUrl;
