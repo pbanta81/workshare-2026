@@ -748,30 +748,26 @@ import Layout from '../layouts/Layout.astro';
     });
   }
   
-  // iOS keyboard fix - counteract viewport resize
-  if (window.visualViewport) {
-    const section = document.querySelector('section') as HTMLElement;
-    let initialHeight = window.visualViewport.height;
+  // iOS keyboard fix - use fixed positioning to prevent any movement
+  const section = document.querySelector('section') as HTMLElement;
+  const passwordInput = document.querySelector('.password-input') as HTMLInputElement;
+  
+  if (section && passwordInput) {
+    passwordInput.addEventListener('focus', () => {
+      // Lock the section in place with fixed positioning
+      const rect = section.getBoundingClientRect();
+      section.style.position = 'fixed';
+      section.style.top = `${rect.top}px`;
+      section.style.left = '0';
+      section.style.right = '0';
+    });
     
-    // Add smooth transition
-    if (section) {
-      section.style.transition = 'transform 0.15s ease-out';
-    }
-    
-    window.visualViewport.addEventListener('resize', () => {
-      if (!section) return;
-      
-      const currentHeight = window.visualViewport.height;
-      const offset = initialHeight - currentHeight;
-      
-      // Only apply if keyboard is showing (height decreased significantly)
-      if (offset > 100) {
-        // Push content DOWN to counteract iOS pushing it up
-        // Use most of the offset to keep content mostly in place
-        section.style.transform = `translateY(${offset * 0.7}px)`;
-      } else {
-        section.style.transform = 'translateY(0)';
-      }
+    passwordInput.addEventListener('blur', () => {
+      // Restore normal positioning
+      section.style.position = '';
+      section.style.top = '';
+      section.style.left = '';
+      section.style.right = '';
     });
   }
 </script>
