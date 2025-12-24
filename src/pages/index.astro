@@ -723,6 +723,17 @@ import Layout from '../layouts/Layout.astro';
                 requestAnimationFrame(() => {
                   glitchContainer.style.transition = 'top 1.5s ease-in-out';
                   glitchContainer.style.top = '36px';
+                  
+                  // Update shader bounds during animation
+                  const updateInterval = setInterval(() => {
+                    window.dispatchEvent(new CustomEvent('headerMoved'));
+                  }, 50);
+                  
+                  // Stop updating after animation completes
+                  setTimeout(() => {
+                    clearInterval(updateInterval);
+                    window.dispatchEvent(new CustomEvent('headerMoved'));
+                  }, 1600);
                 });
               }
               

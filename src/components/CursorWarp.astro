@@ -892,10 +892,11 @@
       }
     }
     
-    // Load texture and update bounds on resize/scroll
+    // Load texture and update bounds on resize/scroll/custom event
     loadHeaderTexture();
     window.addEventListener('resize', updateHeaderBounds);
     window.addEventListener('scroll', updateHeaderBounds);
+    window.addEventListener('headerMoved', updateHeaderBounds);
 
     let startTime = Date.now();
     
