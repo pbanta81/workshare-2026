@@ -704,19 +704,26 @@ import Layout from '../layouts/Layout.astro';
             setTimeout(() => {
               const glitchContainer = document.getElementById('glitch-container') as HTMLElement;
               if (glitchContainer) {
-                // Calculate how far to move up BEFORE removing container
+                // Get current position and dimensions
                 const rect = glitchContainer.getBoundingClientRect();
-                const currentTop = rect.top;
-                const targetTop = 36;
-                const moveDistance = currentTop - targetTop;
                 
-                // Apply transform
-                glitchContainer.style.transform = `translateY(-${moveDistance}px)`;
+                // Switch to fixed positioning at current location (takes out of document flow)
+                glitchContainer.style.position = 'fixed';
+                glitchContainer.style.top = `${rect.top}px`;
+                glitchContainer.style.left = `${rect.left}px`;
+                glitchContainer.style.width = `${rect.width}px`;
+                glitchContainer.style.zIndex = '10';
                 
-                // NOW remove the password container (after transform is applied)
+                // Now safe to remove password container (won't affect fixed element)
                 if (passwordContainer) {
                   passwordContainer.remove();
                 }
+                
+                // Animate to final position
+                requestAnimationFrame(() => {
+                  glitchContainer.style.transition = 'top 1.5s ease-in-out';
+                  glitchContainer.style.top = '36px';
+                });
               }
               
               // After heading animation completes (2000ms), could load portfolio content
