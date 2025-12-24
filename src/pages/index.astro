@@ -64,6 +64,29 @@ import Layout from '../layouts/Layout.astro';
     --glitch-intensity: 20px;
   }
   
+  /* Success transition animations */
+  .password-container {
+    transition: opacity 0.6s ease-out;
+  }
+  
+  .password-container.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  .animate-fade-in {
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .animate-fade-in.heading-to-top {
+    transform: translateY(calc(-50vh + 36px + 50%));
+  }
+  
+  section.content-revealed {
+    justify-content: flex-start;
+    padding-top: 36px;
+  }
+  
   .glitch-container {
     position: relative;
     cursor: pointer;
@@ -632,19 +655,38 @@ import Layout from '../layouts/Layout.astro';
         
         const data = await response.json();
         
-        if (data.success && data.redirectUrl) {
-          // Success - show message and redirect
+        if (data.success) {
+          // Success - show message
           inputWrapper.classList.add('success');
           passwordStatus.textContent = 'ACCESS GRANTED';
           passwordStatus.className = 'password-status success';
           
-          // Trigger flash white effect before redirect
+          // Trigger flash white effect
           triggerFlashWhite();
           
-          // TODO: Re-enable redirect for production
-          // setTimeout(() => {
-          //   window.location.href = data.redirectUrl;
-          // }, 800);
+          // Store portfolio ID for content loading
+          const portfolioId = data.portfolioId;
+          
+          // After 2 seconds, animate the transition
+          setTimeout(() => {
+            // Fade out password container
+            const passwordContainer = document.querySelector('.password-container') as HTMLElement;
+            if (passwordContainer) {
+              passwordContainer.classList.add('fade-out');
+            }
+            
+            // Move heading to top
+            const heroSection = document.querySelector('section') as HTMLElement;
+            const mainContainer = document.querySelector('.animate-fade-in') as HTMLElement;
+            if (heroSection && mainContainer) {
+              heroSection.classList.add('content-revealed');
+              mainContainer.classList.add('heading-to-top');
+            }
+            
+            // After animations complete, could load portfolio content here
+            // setTimeout(() => { loadPortfolioContent(portfolioId); }, 800);
+            
+          }, 2000);
         } else {
           // Invalid password
           inputWrapper.classList.add('error');

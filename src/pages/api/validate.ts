@@ -28,24 +28,28 @@ export const POST: APIRoute = async ({ request }) => {
     const submittedHash = await hashPassword(password.trim());
 
     // Check against environment variables
-    // Format: PORTFOLIO_1_HASH, PORTFOLIO_1_URL, PORTFOLIO_2_HASH, PORTFOLIO_2_URL, etc.
-    let matchedUrl: string | null = null;
+    // Format: PORTFOLIO_1_HASH, PORTFOLIO_1_URL (optional), etc.
+    let matchedPortfolio: { id: number; url?: string } | null = null;
 
     // Check up to 10 portfolio passwords
     for (let i = 1; i <= 10; i++) {
       const storedHash = process.env[`PORTFOLIO_${i}_HASH`];
-      const redirectUrl = process.env[`PORTFOLIO_${i}_URL`];
 
-      if (storedHash && redirectUrl && storedHash === submittedHash) {
-        matchedUrl = redirectUrl;
+      if (storedHash && storedHash === submittedHash) {
+        const redirectUrl = process.env[`PORTFOLIO_${i}_URL`];
+        matchedPortfolio = { 
+          id: i, 
+          url: redirectUrl || undefined 
+        };
         break;
       }
     }
 
-    if (matchedUrl) {
+    if (matchedPortfolio) {
       return new Response(JSON.stringify({ 
         success: true, 
-        redirectUrl: matchedUrl 
+        portfolioId: matchedPortfolio.id,
+        redirectUrl: matchedPortfolio.url
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
