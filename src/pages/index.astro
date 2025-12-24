@@ -184,6 +184,73 @@ import Layout from '../layouts/Layout.astro';
     }
   }
   
+  /* White flash glitch effect for success state */
+  .glitch-container.flash-white .glitch-base {
+    animation: flash-white-base 400ms steps(4) forwards;
+  }
+  
+  .glitch-container.flash-white .glitch-r,
+  .glitch-container.flash-white .glitch-b {
+    opacity: 0.9;
+    animation: flash-white-layer 400ms steps(3) forwards;
+  }
+  
+  @keyframes flash-white-base {
+    0% {
+      filter: brightness(1);
+      transform: translate(0, 0);
+    }
+    15% {
+      filter: brightness(3) saturate(0);
+      transform: translate(-3px, 0);
+    }
+    30% {
+      filter: brightness(1.5) saturate(0.5);
+      transform: translate(2px, 0);
+    }
+    50% {
+      filter: brightness(5) saturate(0);
+      transform: translate(0, 0);
+    }
+    70% {
+      filter: brightness(2) saturate(0);
+      transform: translate(-1px, 0);
+    }
+    100% {
+      filter: brightness(100) saturate(0);
+      transform: translate(0, 0);
+    }
+  }
+  
+  @keyframes flash-white-layer {
+    0% {
+      filter: brightness(1) saturate(2);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      transform: translate(4px, 0);
+    }
+    25% {
+      filter: brightness(3) saturate(0);
+      clip-path: polygon(0 20%, 100% 20%, 100% 80%, 0 80%);
+      transform: translate(-6px, 0);
+    }
+    50% {
+      filter: brightness(5) saturate(0);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      transform: translate(2px, 0);
+    }
+    75% {
+      filter: brightness(10) saturate(0);
+      clip-path: polygon(0 10%, 100% 10%, 100% 90%, 0 90%);
+      transform: translate(-2px, 0);
+    }
+    100% {
+      filter: brightness(100) saturate(0);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+  }
+  
   /* Password Input - ANSI/Pixel Style */
   .password-container {
     display: flex;
@@ -446,6 +513,15 @@ import Layout from '../layouts/Layout.astro';
     }, duration);
   }
   
+  function triggerFlashWhite() {
+    if (!container) return;
+    
+    // Add flash-white class
+    container.classList.add('flash-white');
+    
+    // Don't remove - stays white (for redirect transition)
+  }
+  
   if (container) {
     // Trigger glitch on click
     container.addEventListener('click', triggerGlitch);
@@ -553,8 +629,8 @@ import Layout from '../layouts/Layout.astro';
           passwordStatus.textContent = 'ACCESS GRANTED';
           passwordStatus.className = 'password-status success';
           
-          // Trigger glitch effect before redirect
-          triggerGlitch();
+          // Trigger flash white effect before redirect
+          triggerFlashWhite();
           
           // TODO: Re-enable redirect for production
           // setTimeout(() => {

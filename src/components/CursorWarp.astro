@@ -773,7 +773,12 @@
     });
 
     document.addEventListener('click', (e) => {
+      // Ignore clicks on controls and password form
       if ((e.target as HTMLElement).closest('#shader-controls')) return;
+      if ((e.target as HTMLElement).closest('#password-form')) return;
+      
+      // Ignore synthetic clicks (e.g., from keyboard Enter) with no real coordinates
+      if (e.clientX === 0 && e.clientY === 0) return;
       
       const dpr = window.devicePixelRatio || 1;
       clickX = e.clientX * dpr;
