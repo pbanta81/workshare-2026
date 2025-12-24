@@ -747,4 +747,25 @@ import Layout from '../layouts/Layout.astro';
       }
     });
   }
+  
+  // iOS keyboard fix - counteract viewport resize
+  if (window.visualViewport) {
+    const section = document.querySelector('section') as HTMLElement;
+    let initialHeight = window.visualViewport.height;
+    
+    window.visualViewport.addEventListener('resize', () => {
+      if (!section) return;
+      
+      const currentHeight = window.visualViewport.height;
+      const offset = initialHeight - currentHeight;
+      
+      // Only apply if keyboard is showing (height decreased significantly)
+      if (offset > 100) {
+        // Push content DOWN to counteract iOS pushing it up
+        section.style.transform = `translateY(${offset - 100}px)`;
+      } else {
+        section.style.transform = 'translateY(0)';
+      }
+    });
+  }
 </script>
