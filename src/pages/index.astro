@@ -743,29 +743,4 @@ import Layout from '../layouts/Layout.astro';
     });
   }
   
-  // iOS keyboard fix: lock position AFTER keyboard finishes opening
-  const pwInputEl = document.querySelector('.password-input');
-  const sectionEl = document.querySelector('section');
-  
-  if (pwInputEl && sectionEl) {
-    pwInputEl.addEventListener('focus', () => {
-      // Wait for iOS keyboard animation to settle
-      setTimeout(() => {
-        const rect = sectionEl.getBoundingClientRect();
-        sectionEl.style.position = 'fixed';
-        sectionEl.style.top = `${rect.top}px`;
-        sectionEl.style.left = '0';
-        sectionEl.style.right = '0';
-        sectionEl.style.bottom = 'auto';
-      }, 300);
-    });
-
-    pwInputEl.addEventListener('blur', () => {
-      sectionEl.style.position = '';
-      sectionEl.style.top = '';
-      sectionEl.style.left = '';
-      sectionEl.style.right = '';
-      sectionEl.style.bottom = '';
-    });
-  }
 </script>
