@@ -4,8 +4,8 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout>
   <!-- Hero Section -->
-  <section class="h-screen flex flex-col items-center justify-center px-6">
-    <div class="w-full max-w-4xl mx-auto animate-fade-in opacity-0">
+  <section class="h-screen flex flex-col justify-center md:items-center">
+    <div class="w-full md:max-w-4xl md:mx-auto md:px-6 animate-fade-in opacity-0">
       <div class="glitch-container" id="glitch-container">
         <img 
           src="/ansi-heading.png" 
@@ -30,7 +30,7 @@ import Layout from '../layouts/Layout.astro';
       </div>
       
       <!-- Password Input -->
-      <div class="password-container" style="margin-top: 48px;">
+      <div class="password-container">
         <form id="password-form" class="password-form">
           <label for="password-input" class="input-label">ENTER ACCESS CODE</label>
           <div class="input-glitch-container">
@@ -67,6 +67,15 @@ import Layout from '../layouts/Layout.astro';
   /* Success transition animations */
   .password-container {
     transition: opacity 1.5s ease-out;
+    margin-top: 24px;
+    padding: 0 16px;
+  }
+  
+  @media (min-width: 768px) {
+    .password-container {
+      margin-top: 48px;
+      padding: 0;
+    }
   }
   
   .password-container.fade-out {
@@ -324,7 +333,7 @@ import Layout from '../layouts/Layout.astro';
     border: none;
     color: #22d3ee;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
     padding: 12px 8px;
     letter-spacing: 2px;
     text-transform: uppercase;
