@@ -103,21 +103,30 @@ import Layout from '../layouts/Layout.astro';
     display: block;
   }
   
-  /* Mobile: Override safe area and make image full width */
+  /* Mobile: Force everything to full viewport width */
   @media (max-width: 767px) {
-    .safe-area-override {
-      padding-left: 0 !important;
-      padding-right: 0 !important;
+    section.safe-area-override {
+      padding: 0 !important;
+      margin: 0 !important;
+      width: 100vw !important;
+      max-width: 100vw !important;
+    }
+    
+    .animate-fade-in {
+      width: 100vw !important;
+      max-width: 100vw !important;
+      padding: 0 !important;
+      margin: 0 !important;
     }
     
     .glitch-container {
-      width: 100vw;
-      max-width: none;
+      width: 100vw !important;
+      max-width: 100vw !important;
     }
     
     .glitch-img {
-      width: 100vw;
-      max-width: none;
+      width: 100vw !important;
+      max-width: 100vw !important;
     }
   }
   
