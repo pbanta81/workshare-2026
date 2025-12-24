@@ -4,8 +4,8 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout>
   <!-- Hero Section -->
-  <section class="h-screen flex flex-col items-center justify-center px-6 overflow-hidden">
-    <div class="w-full max-w-4xl mx-auto animate-fade-in opacity-0 overflow-hidden">
+  <section class="h-screen flex flex-col items-center justify-center px-6">
+    <div class="w-full max-w-4xl mx-auto animate-fade-in opacity-0">
       <div class="glitch-container" id="glitch-container">
         <img 
           src="/ansi-heading.png" 
@@ -66,7 +66,7 @@ import Layout from '../layouts/Layout.astro';
   
   /* Success transition animations */
   .password-container {
-    transition: opacity 0.6s ease-out;
+    transition: opacity 1.5s ease-out;
   }
   
   .password-container.fade-out {
@@ -74,17 +74,12 @@ import Layout from '../layouts/Layout.astro';
     pointer-events: none;
   }
   
-  .animate-fade-in {
-    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  .glitch-container {
+    transition: transform 1.5s ease-in-out;
   }
   
-  .animate-fade-in.heading-to-top {
-    transform: translateY(calc(-50vh + 36px + 50%));
-  }
-  
-  section.content-revealed {
-    justify-content: flex-start;
-    padding-top: 36px;
+  .glitch-container.move-to-top {
+    /* Transform value set via JavaScript */
   }
   
   .glitch-container {
@@ -667,26 +662,35 @@ import Layout from '../layouts/Layout.astro';
           // Store portfolio ID for content loading
           const portfolioId = data.portfolioId;
           
-          // After 2 seconds, animate the transition
+          // Sequence: flash (600ms) -> fade input (1500ms) -> move heading (2000ms)
+          
+          // After flash white completes (600ms), fade out input
           setTimeout(() => {
-            // Fade out password container
             const passwordContainer = document.querySelector('.password-container') as HTMLElement;
             if (passwordContainer) {
               passwordContainer.classList.add('fade-out');
             }
             
-            // Move heading to top
-            const heroSection = document.querySelector('section') as HTMLElement;
-            const mainContainer = document.querySelector('.animate-fade-in') as HTMLElement;
-            if (heroSection && mainContainer) {
-              heroSection.classList.add('content-revealed');
-              mainContainer.classList.add('heading-to-top');
-            }
+            // After input fade completes (1500ms), move heading to top
+            setTimeout(() => {
+              const glitchContainer = document.getElementById('glitch-container') as HTMLElement;
+              if (glitchContainer) {
+                // Calculate how far to move up
+                const rect = glitchContainer.getBoundingClientRect();
+                const currentTop = rect.top;
+                const targetTop = 36;
+                const moveDistance = currentTop - targetTop;
+                
+                // Apply transform
+                glitchContainer.style.transform = `translateY(-${moveDistance}px)`;
+              }
+              
+              // After heading animation completes (2000ms), could load portfolio content
+              // setTimeout(() => { loadPortfolioContent(portfolioId); }, 2000);
+              
+            }, 1500);
             
-            // After animations complete, could load portfolio content here
-            // setTimeout(() => { loadPortfolioContent(portfolioId); }, 800);
-            
-          }, 2000);
+          }, 600);
         } else {
           // Invalid password
           inputWrapper.classList.add('error');

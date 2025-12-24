@@ -32,11 +32,12 @@ export const POST: APIRoute = async ({ request }) => {
     let matchedPortfolio: { id: number; url?: string } | null = null;
 
     // Check up to 10 portfolio passwords
+    // Use process.env (Vercel) with fallback to import.meta.env (local dev)
     for (let i = 1; i <= 10; i++) {
-      const storedHash = process.env[`PORTFOLIO_${i}_HASH`];
+      const storedHash = process.env[`PORTFOLIO_${i}_HASH`] || import.meta.env[`PORTFOLIO_${i}_HASH`];
 
       if (storedHash && storedHash === submittedHash) {
-        const redirectUrl = process.env[`PORTFOLIO_${i}_URL`];
+        const redirectUrl = process.env[`PORTFOLIO_${i}_URL`] || import.meta.env[`PORTFOLIO_${i}_URL`];
         matchedPortfolio = { 
           id: i, 
           url: redirectUrl || undefined 
