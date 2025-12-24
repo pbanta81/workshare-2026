@@ -750,10 +750,10 @@ import Layout from '../layouts/Layout.astro';
   
   // iOS keyboard fix - use fixed positioning to prevent any movement
   const section = document.querySelector('section') as HTMLElement;
-  const passwordInput = document.querySelector('.password-input') as HTMLInputElement;
+  const passwordInputEl = document.querySelector('.password-input') as HTMLInputElement;
   
-  if (section && passwordInput) {
-    passwordInput.addEventListener('focus', () => {
+  if (section && passwordInputEl) {
+    passwordInputEl.addEventListener('focus', () => {
       // Lock the section in place with fixed positioning
       const rect = section.getBoundingClientRect();
       section.style.position = 'fixed';
@@ -762,7 +762,7 @@ import Layout from '../layouts/Layout.astro';
       section.style.right = '0';
     });
     
-    passwordInput.addEventListener('blur', () => {
+    passwordInputEl.addEventListener('blur', () => {
       // Restore normal positioning
       section.style.position = '';
       section.style.top = '';
