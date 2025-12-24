@@ -24,92 +24,115 @@
     </div>
   </div>
   <div class="control-body">
-    <div class="control-section">
-      <h4>Hover Effect</h4>
-      <label>
-        <span class="label-text">Radius:</span>
-        <input type="number" id="hoverRadiusVal" value="300" min="50" max="400">
-        <input type="range" id="hoverRadius" min="50" max="400" value="300">
-      </label>
-      <label>
-        <span class="label-text">Fade Distance:</span>
-        <input type="number" id="hoverFadeVal" value="100" min="20" max="300">
-        <input type="range" id="hoverFade" min="20" max="300" value="100">
-      </label>
-      <label>
-        <span class="label-text">Max Scale:</span>
-        <input type="number" id="hoverMaxScaleVal" value="16" min="2" max="16">
-        <input type="range" id="hoverMaxScale" min="2" max="16" value="16">
-      </label>
-      <label>
-        <span class="label-text">Repel Strength:</span>
-        <input type="number" id="repelStrengthVal" value="23" min="0" max="30">
-        <input type="range" id="repelStrength" min="0" max="30" value="23">
-      </label>
-      <label>
-        <span class="label-text">Color Intensity:</span>
-        <input type="number" id="colorIntensityVal" value="0.2" min="0" max="1" step="0.05">
-        <input type="range" id="colorIntensity" min="0" max="1" value="0.2" step="0.05">
-      </label>
-      <label>
-        <span class="label-text">Gumminess:</span>
-        <input type="number" id="gumminessVal" value="0.08" min="0.02" max="0.3" step="0.01">
-        <input type="range" id="gumminess" min="0.02" max="0.3" value="0.08" step="0.01">
-      </label>
+    <div class="control-section" data-section="hover">
+      <h4><span>Hover Effect</span><button class="section-toggle">−</button></h4>
+      <div class="section-content">
+        <label>
+          <span class="label-text">Radius:</span>
+          <input type="number" id="hoverRadiusVal" value="300" min="50" max="400">
+          <input type="range" id="hoverRadius" min="50" max="400" value="300">
+        </label>
+        <label>
+          <span class="label-text">Fade Distance:</span>
+          <input type="number" id="hoverFadeVal" value="100" min="20" max="300">
+          <input type="range" id="hoverFade" min="20" max="300" value="100">
+        </label>
+        <label>
+          <span class="label-text">Max Scale:</span>
+          <input type="number" id="hoverMaxScaleVal" value="16" min="2" max="16">
+          <input type="range" id="hoverMaxScale" min="2" max="16" value="16">
+        </label>
+        <label>
+          <span class="label-text">Repel Strength:</span>
+          <input type="number" id="repelStrengthVal" value="23" min="0" max="30">
+          <input type="range" id="repelStrength" min="0" max="30" value="23">
+        </label>
+        <label>
+          <span class="label-text">Color Intensity:</span>
+          <input type="number" id="colorIntensityVal" value="0.2" min="0" max="1" step="0.05">
+          <input type="range" id="colorIntensity" min="0" max="1" value="0.2" step="0.05">
+        </label>
+        <label>
+          <span class="label-text">Gumminess:</span>
+          <input type="number" id="gumminessVal" value="0.08" min="0.02" max="0.3" step="0.01">
+          <input type="range" id="gumminess" min="0.02" max="0.3" value="0.08" step="0.01">
+        </label>
+      </div>
     </div>
-    <div class="control-section">
-      <h4>Click Ripple</h4>
-      <label>
-        <span class="label-text">Speed:</span>
-        <input type="number" id="rippleSpeedVal" value="1800" min="200" max="2000">
-        <input type="range" id="rippleSpeed" min="200" max="2000" value="1800">
-      </label>
-      <label>
-        <span class="label-text">Width:</span>
-        <input type="number" id="rippleWidthVal" value="366" min="20" max="400">
-        <input type="range" id="rippleWidth" min="20" max="400" value="366">
-      </label>
-      <label>
-        <span class="label-text">Duration:</span>
-        <input type="number" id="rippleDurationVal" value="0.5" min="0.3" max="4" step="0.1">
-        <input type="range" id="rippleDuration" min="0.3" max="4" value="0.5" step="0.1">
-      </label>
-      <label>
-        <span class="label-text">Color Intensity:</span>
-        <input type="number" id="rippleColorIntensityVal" value="0" min="0" max="1" step="0.05">
-        <input type="range" id="rippleColorIntensity" min="0" max="1" value="0" step="0.05">
-      </label>
+    <div class="control-section" data-section="ripple">
+      <h4><span>Click Ripple</span><button class="section-toggle">−</button></h4>
+      <div class="section-content">
+        <label>
+          <span class="label-text">Speed:</span>
+          <input type="number" id="rippleSpeedVal" value="1800" min="200" max="2000">
+          <input type="range" id="rippleSpeed" min="200" max="2000" value="1800">
+        </label>
+        <label>
+          <span class="label-text">Width:</span>
+          <input type="number" id="rippleWidthVal" value="366" min="20" max="400">
+          <input type="range" id="rippleWidth" min="20" max="400" value="366">
+        </label>
+        <label>
+          <span class="label-text">Duration:</span>
+          <input type="number" id="rippleDurationVal" value="0.5" min="0.3" max="4" step="0.1">
+          <input type="range" id="rippleDuration" min="0.3" max="4" value="0.5" step="0.1">
+        </label>
+        <label>
+          <span class="label-text">Color Intensity:</span>
+          <input type="number" id="rippleColorIntensityVal" value="0" min="0" max="1" step="0.05">
+          <input type="range" id="rippleColorIntensity" min="0" max="1" value="0" step="0.05">
+        </label>
+      </div>
     </div>
-    <div class="control-section">
-      <h4>Grid</h4>
-      <label>
-        <span class="label-text">Base Dot Size:</span>
-        <input type="number" id="baseDotSizeVal" value="3" min="1" max="6">
-        <input type="range" id="baseDotSize" min="1" max="6" value="3">
-      </label>
-      <label>
-        <span class="label-text">Dot Roundness:</span>
-        <input type="number" id="dotRoundnessVal" value="0" min="0" max="1" step="0.1">
-        <input type="range" id="dotRoundness" min="0" max="1" value="0" step="0.1">
-      </label>
+    <div class="control-section" data-section="grid">
+      <h4><span>Grid</span><button class="section-toggle">−</button></h4>
+      <div class="section-content">
+        <label>
+          <span class="label-text">Base Dot Size:</span>
+          <input type="number" id="baseDotSizeVal" value="3" min="1" max="6">
+          <input type="range" id="baseDotSize" min="1" max="6" value="3">
+        </label>
+        <label>
+          <span class="label-text">Dot Roundness:</span>
+          <input type="number" id="dotRoundnessVal" value="0" min="0" max="1" step="0.1">
+          <input type="range" id="dotRoundness" min="0" max="1" value="0" step="0.1">
+        </label>
+      </div>
     </div>
-    <div class="control-section">
-      <h4>Image Color Pickup</h4>
-      <label>
-        <span class="label-text">Range:</span>
-        <input type="number" id="colorPickupRangeVal" value="400" min="50" max="800">
-        <input type="range" id="colorPickupRange" min="50" max="800" value="400">
-      </label>
-      <label>
-        <span class="label-text">Vibrancy:</span>
-        <input type="number" id="colorVibrancyVal" value="0.8" min="0" max="1" step="0.05">
-        <input type="range" id="colorVibrancy" min="0" max="1" value="0.8" step="0.05">
-      </label>
-      <label>
-        <span class="label-text">Softness:</span>
-        <input type="number" id="colorSoftnessVal" value="20" min="5" max="100">
-        <input type="range" id="colorSoftness" min="5" max="100" value="20">
-      </label>
+    <div class="control-section" data-section="colorpickup">
+      <h4><span>Image Color Pickup</span><button class="section-toggle">−</button></h4>
+      <div class="section-content">
+        <label>
+          <span class="label-text">Range:</span>
+          <input type="number" id="colorPickupRangeVal" value="400" min="50" max="800">
+          <input type="range" id="colorPickupRange" min="50" max="800" value="400">
+        </label>
+        <label>
+          <span class="label-text">Vibrancy:</span>
+          <input type="number" id="colorVibrancyVal" value="0.8" min="0" max="1" step="0.05">
+          <input type="range" id="colorVibrancy" min="0" max="1" value="0.8" step="0.05">
+        </label>
+        <label>
+          <span class="label-text">Softness:</span>
+          <input type="number" id="colorSoftnessVal" value="20" min="5" max="100">
+          <input type="range" id="colorSoftness" min="5" max="100" value="20">
+        </label>
+      </div>
+    </div>
+    <div class="control-section" data-section="glitch">
+      <h4><span>Image Glitch</span><button class="section-toggle">−</button></h4>
+      <div class="section-content">
+        <label>
+          <span class="label-text">Duration:</span>
+          <input type="number" id="glitchDurationVal" value="200" min="50" max="500" step="10">
+          <input type="range" id="glitchDuration" min="50" max="500" value="200" step="10">
+        </label>
+        <label>
+          <span class="label-text">Intensity:</span>
+          <input type="number" id="glitchIntensityVal" value="8" min="2" max="20">
+          <input type="range" id="glitchIntensity" min="2" max="20" value="8">
+        </label>
+      </div>
     </div>
   </div>
 </div>
@@ -181,11 +204,15 @@
   }
   
   .control-section {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 12px;
   }
   
   .control-section:last-child {
     margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
   }
   
   .control-section h4 {
@@ -194,6 +221,36 @@
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  .control-section h4:hover {
+    color: #67e8f9;
+  }
+  
+  .section-toggle {
+    background: none;
+    border: none;
+    color: #a1a1aa;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+  }
+  
+  .section-toggle:hover {
+    color: #22d3ee;
+  }
+  
+  .control-section.collapsed .section-content {
+    display: none;
+  }
+  
+  .control-section.collapsed h4 {
+    margin-bottom: 0;
   }
   
   label {
@@ -282,6 +339,53 @@
       body.classList.toggle('collapsed');
       toggle.textContent = body.classList.contains('collapsed') ? '+' : '−';
     });
+    
+    // Section collapse toggles
+    document.querySelectorAll('.control-section h4').forEach(header => {
+      header.addEventListener('click', () => {
+        const section = header.closest('.control-section')!;
+        section.classList.toggle('collapsed');
+        const toggleBtn = header.querySelector('.section-toggle')!;
+        toggleBtn.textContent = section.classList.contains('collapsed') ? '+' : '−';
+      });
+    });
+    
+    // Glitch controls (CSS-based effect)
+    const glitchDurationRange = document.getElementById('glitchDuration') as HTMLInputElement;
+    const glitchDurationNum = document.getElementById('glitchDurationVal') as HTMLInputElement;
+    const glitchIntensityRange = document.getElementById('glitchIntensity') as HTMLInputElement;
+    const glitchIntensityNum = document.getElementById('glitchIntensityVal') as HTMLInputElement;
+    
+    function updateGlitchVars() {
+      const duration = parseFloat(glitchDurationRange.value);
+      const intensity = parseFloat(glitchIntensityRange.value);
+      document.documentElement.style.setProperty('--glitch-duration', duration + 'ms');
+      document.documentElement.style.setProperty('--glitch-intensity', intensity + 'px');
+    }
+    
+    [glitchDurationRange, glitchIntensityRange].forEach(input => {
+      input.addEventListener('input', () => {
+        if (input === glitchDurationRange) {
+          glitchDurationNum.value = input.value;
+        } else {
+          glitchIntensityNum.value = input.value;
+        }
+        updateGlitchVars();
+      });
+    });
+    
+    [glitchDurationNum, glitchIntensityNum].forEach(input => {
+      input.addEventListener('input', () => {
+        if (input === glitchDurationNum) {
+          glitchDurationRange.value = input.value;
+        } else {
+          glitchIntensityRange.value = input.value;
+        }
+        updateGlitchVars();
+      });
+    });
+    
+    updateGlitchVars(); // Initialize
     
     const controls = [
       'hoverRadius', 'hoverFade', 'hoverMaxScale', 'repelStrength', 'colorIntensity', 'gumminess',
