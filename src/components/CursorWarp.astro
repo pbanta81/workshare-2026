@@ -1,5 +1,15 @@
 ---
-// Cursor shader with color gradient, repel, and live controls
+/**
+ * Interactive WebGL Shader Background
+ * 
+ * Features:
+ * - Hexagonal dot grid with hover/repel effects
+ * - Click ripple animation
+ * - Color sampling from header image
+ * - Soft-edged anti-aliased dots
+ * 
+ * Keyboard: Shift+D to hide/show control panel
+ */
 ---
 
 <canvas id="warp-canvas"></canvas>
@@ -8,7 +18,10 @@
 <div id="shader-controls">
   <div class="control-header">
     <span>Shader Controls</span>
-    <button id="toggle-controls">−</button>
+    <div class="control-header-buttons">
+      <button id="reset-controls" title="Reset to defaults">↺</button>
+      <button id="toggle-controls">−</button>
+    </div>
   </div>
   <div class="control-body">
     <div class="control-section">
@@ -78,6 +91,10 @@
         Vibrancy: <span id="colorVibrancyVal">0.8</span>
         <input type="range" id="colorVibrancy" min="0" max="1" value="0.8" step="0.05">
       </label>
+      <label>
+        Softness: <span id="colorSoftnessVal">30</span>px
+        <input type="range" id="colorSoftness" min="5" max="100" value="30">
+      </label>
     </div>
   </div>
 </div>
@@ -107,6 +124,10 @@
     backdrop-filter: blur(10px);
   }
   
+  #shader-controls.hidden {
+    display: none;
+  }
+  
   .control-header {
     display: flex;
     justify-content: space-between;
@@ -117,6 +138,11 @@
     font-weight: 500;
   }
   
+  .control-header-buttons {
+    display: flex;
+    gap: 8px;
+  }
+  
   .control-header button {
     background: none;
     border: none;
@@ -125,6 +151,10 @@
     font-size: 18px;
     line-height: 1;
     padding: 0 4px;
+  }
+  
+  .control-header button:hover {
+    color: #22d3ee;
   }
   
   .control-body {
@@ -167,8 +197,8 @@
   const canvas = document.getElementById('warp-canvas') as HTMLCanvasElement;
   const gl = canvas.getContext('webgl', { alpha: false });
   
-  // Control panel state
-  const params = {
+  // Default values (for reset functionality)
+  const defaults = {
     hoverRadius: 200,
     hoverFade: 100,
     hoverMaxScale: 15,
@@ -183,12 +213,25 @@
     dotRoundness: 0,
     colorPickupRange: 400,
     colorVibrancy: 0.8,
+    colorSoftness: 30,
   };
+  
+  // Control panel state (starts with defaults)
+  const params = { ...defaults };
   
   // Setup control panel
   function setupControls() {
+    const controlPanel = document.getElementById('shader-controls')!;
     const toggle = document.getElementById('toggle-controls')!;
     const body = document.querySelector('.control-body')!;
+    
+    // Keyboard shortcut: Shift+D to toggle control panel
+    document.addEventListener('keydown', (e) => {
+      if (e.shiftKey && e.key === 'D') {
+        e.preventDefault();
+        controlPanel.classList.toggle('hidden');
+      }
+    });
     
     toggle.addEventListener('click', () => {
       body.classList.toggle('collapsed');
@@ -198,7 +241,7 @@
     const controls = [
       'hoverRadius', 'hoverFade', 'hoverMaxScale', 'repelStrength', 'colorIntensity', 'gumminess',
       'rippleSpeed', 'rippleWidth', 'rippleDuration', 'rippleColorIntensity', 'baseDotSize', 'dotRoundness',
-      'colorPickupRange', 'colorVibrancy'
+      'colorPickupRange', 'colorVibrancy', 'colorSoftness'
     ];
     
     controls.forEach(id => {
@@ -209,6 +252,20 @@
         const val = parseFloat(input.value);
         (params as any)[id] = val;
         valSpan.textContent = val.toString();
+      });
+    });
+    
+    // Reset to defaults button
+    const resetBtn = document.getElementById('reset-controls')!;
+    resetBtn.addEventListener('click', () => {
+      controls.forEach(id => {
+        const input = document.getElementById(id) as HTMLInputElement;
+        const valSpan = document.getElementById(id + 'Val')!;
+        const defaultVal = (defaults as any)[id];
+        
+        input.value = defaultVal.toString();
+        (params as any)[id] = defaultVal;
+        valSpan.textContent = defaultVal.toString();
       });
     });
   }
@@ -239,6 +296,7 @@
       // Image texture sampling
       uniform sampler2D u_headerTexture;
       uniform vec4 u_headerBounds; // x, y, width, height in pixels (y is flipped for WebGL)
+      uniform vec2 u_textureSize; // Actual texture dimensions (may differ from header bounds)
       uniform float u_headerReady;
       
       // Controllable params
@@ -255,6 +313,7 @@
       uniform float u_dotRoundness;
       uniform float u_colorPickupRange;
       uniform float u_colorVibrancy;
+      uniform float u_colorSoftness;
       
       // Hexagonal grid constants
       const float HEX_SIZE = 16.0; // Horizontal spacing
@@ -317,15 +376,12 @@
           repelledCenter = cellCenter + awayDir * u_repelStrength * repelFactor * u_mouseActive;
         }
         
-        // Recalculate distance from repelled position
-        float repelledDist = distance(repelledCenter, mouse);
-        
         // Distance from this PIXEL to mouse (for COLOR - smooth gradient)
         float pixelDist = distance(uv, mouse);
         
         // ===== HOVER EFFECT =====
-        // Size factor based on repelled cell distance (dots grow near cursor)
-        float sizeFactor = (1.0 - clamp(repelledDist / totalRadius, 0.0, 1.0)) * u_mouseActive;
+        // Size factor based on ORIGINAL cell distance (before repel) so repel doesn't kill scaling
+        float sizeFactor = (1.0 - clamp(cellDist / totalRadius, 0.0, 1.0)) * u_mouseActive;
         sizeFactor = sizeFactor * sizeFactor;
         
         // Color factor based on PIXEL distance - linear 100% at center to 0% at edge
@@ -369,59 +425,71 @@
         float rippleColorEffect = inRing * min(u_rippleColorIntensity, u_colorIntensity);
         dotColor = mix(dotColor, HOVER_COLOR, rippleColorEffect);
         
-        // ===== SAMPLE COLOR FROM HEADER IMAGE =====
+        // ===== SAMPLE COLOR FROM COLOR MAP (drawImage.png) =====
+        // Radiating effect: colors emanate from cursor position outward
+        // The color map is pre-blurred, so minimal additional blur needed
         vec2 headerPos = u_headerBounds.xy;
         vec2 headerSize = u_headerBounds.zw;
-        if (u_headerReady > 0.5 && headerSize.x > 0.0 && headerSize.y > 0.0) {
+        vec2 texSize = u_textureSize;
+        if (u_headerReady > 0.5 && headerSize.x > 0.0 && headerSize.y > 0.0 && texSize.x > 0.0) {
           
-          // Effect strength based on hover/ripple
+          vec2 texScale = texSize / headerSize;
           float effectStrength = max(sizeFactor, inRing * 0.5);
           
-          // Check if MOUSE is close enough to the image to pick up colors
           vec2 mouseRel = mouse - headerPos;
           vec2 mouseOnImage = clamp(mouseRel, vec2(0.0), headerSize);
           float mouseDistFromImage = distance(mouseRel, mouseOnImage);
           
-          // Only apply color effect if mouse is within pickup range of the image
           if (effectStrength > 0.001 && mouseDistFromImage < u_colorPickupRange) {
-            // Positions relative to header
-            vec2 dotRel = cellCenter - headerPos;
-            
-            // Clamp mouse position to image bounds for sampling
+            // Mouse position on image (clamped to bounds)
             vec2 mouseOnImageClamped = clamp(mouseRel, vec2(0.0), headerSize - vec2(1.0));
             
-            // For sampling: use where the mouse is on the image
-            // with slight offset based on dot direction for variety
+            // Direction from mouse to this dot
             vec2 dotDir = cellCenter - mouse;
             float dotDist = length(dotDir);
             vec2 normalizedDir = dotDist > 0.001 ? dotDir / dotDist : vec2(0.0);
             
-            // Sample from mouse position, offset slightly in dot direction
-            vec2 samplePos = mouseOnImageClamped + normalizedDir * min(dotDist * 0.2, length(headerSize) * 0.3);
+            // RADIATING: sample position spreads outward from mouse
+            // Colors emanate from where cursor touches the image
+            float spreadAmount = dotDist * 0.5; // Significant spread
+            vec2 samplePos = mouseOnImageClamped + normalizedDir * spreadAmount;
             samplePos = clamp(samplePos, vec2(0.0), headerSize - vec2(1.0));
             
-            // Convert to UV
-            vec2 texUV = vec2(samplePos.x / headerSize.x, 1.0 - (samplePos.y / headerSize.y));
-            vec4 headerColor = texture2D(u_headerTexture, texUV);
+            // Convert to texture space
+            vec2 texSamplePos = samplePos * texScale;
             
-            // Check brightness and saturation
+            // Single sample from pre-blurred color map (minimal extra blur)
+            vec2 texUV = vec2(texSamplePos.x / texSize.x, 1.0 - (texSamplePos.y / texSize.y));
+            vec4 sampleColor = texture2D(u_headerTexture, texUV);
+            
+            // Small blur for smoothness (color map is already blurred)
+            vec3 headerColor = sampleColor.rgb;
+            if (u_colorSoftness > 1.0) {
+              vec3 blurAccum = sampleColor.rgb;
+              float blurWeight = 1.0;
+              for (float angle = 0.0; angle < 6.28318; angle += 1.57) { // 4 samples
+                vec2 offset = vec2(cos(angle), sin(angle)) * u_colorSoftness * 0.5;
+                vec2 blurUV = vec2(
+                  (texSamplePos.x + offset.x) / texSize.x,
+                  1.0 - ((texSamplePos.y + offset.y) / texSize.y)
+                );
+                blurUV = clamp(blurUV, vec2(0.0), vec2(1.0));
+                blurAccum += texture2D(u_headerTexture, blurUV).rgb * 0.5;
+                blurWeight += 0.5;
+              }
+              headerColor = blurAccum / blurWeight;
+            }
+            
+            // Ignore pure black samples
             float brightness = (headerColor.r + headerColor.g + headerColor.b) / 3.0;
-            float maxC = max(max(headerColor.r, headerColor.g), headerColor.b);
-            float minC = min(min(headerColor.r, headerColor.g), headerColor.b);
-            float saturation = (maxC > 0.0) ? (maxC - minC) / maxC : 0.0;
+            float colorValid = smoothstep(0.02, 0.08, brightness);
             
-            // Include colorful pixels OR very bright (white) pixels
-            // Exclude: gray bars (medium brightness, low saturation)
-            float isColorful = smoothstep(0.1, 0.3, saturation);
-            float isWhite = smoothstep(0.7, 0.9, brightness);
-            float colorfulness = max(isColorful, isWhite) * smoothstep(0.08, 0.2, brightness);
-            
-            // Fade based on mouse distance from image (smooth transition)
+            // Fade based on mouse distance from image
             float mouseFade = 1.0 - smoothstep(0.0, u_colorPickupRange, mouseDistFromImage);
             
-            float finalVibrancy = effectStrength * colorfulness * mouseFade * u_colorVibrancy;
+            float finalVibrancy = effectStrength * colorValid * mouseFade * u_colorVibrancy;
             
-            dotColor = mix(dotColor, headerColor.rgb, clamp(finalVibrancy, 0.0, 1.0));
+            dotColor = mix(dotColor, headerColor, clamp(finalVibrancy, 0.0, 1.0));
           }
         }
         
@@ -492,6 +560,7 @@
     // Header texture uniforms
     const headerTextureLocation = gl.getUniformLocation(program, 'u_headerTexture');
     const headerBoundsLocation = gl.getUniformLocation(program, 'u_headerBounds');
+    const textureSizeLocation = gl.getUniformLocation(program, 'u_textureSize');
     const headerReadyLocation = gl.getUniformLocation(program, 'u_headerReady');
     
     const hoverRadiusLocation = gl.getUniformLocation(program, 'u_hoverRadius');
@@ -507,6 +576,7 @@
     const dotRoundnessLocation = gl.getUniformLocation(program, 'u_dotRoundness');
     const colorPickupRangeLocation = gl.getUniformLocation(program, 'u_colorPickupRange');
     const colorVibrancyLocation = gl.getUniformLocation(program, 'u_colorVibrancy');
+    const colorSoftnessLocation = gl.getUniformLocation(program, 'u_colorSoftness');
 
     // State
     let mouseX = -9999;
@@ -560,6 +630,7 @@
     let headerTexture: WebGLTexture | null = null;
     let headerReady = 0;
     let headerBounds = { x: 0, y: 0, width: 0, height: 0 };
+    let textureSize = { width: 0, height: 0 }; // Actual color map texture dimensions
     
     function updateHeaderBounds() {
       const headerImg = document.querySelector('img[src*="ansi-heading"]') as HTMLImageElement;
@@ -573,7 +644,6 @@
           width: rect.width * dpr,
           height: rect.height * dpr
         };
-        console.log('Updated header bounds:', headerBounds, 'rect:', rect, 'dpr:', dpr);
       }
     }
     
@@ -585,17 +655,28 @@
         return;
       }
       
+      // Load a SEPARATE image for the color sampling texture
+      // This allows us to use a different/simplified color map for the effect
+      const colorMapImg = new Image();
+      colorMapImg.crossOrigin = 'anonymous';
+      colorMapImg.src = '/drawImage.png';
+      
       // Create offscreen canvas to render the image
       const offscreen = document.createElement('canvas');
       const ctx = offscreen.getContext('2d')!;
       
       const loadImage = () => {
-        // Set canvas size to image natural size
-        offscreen.width = headerImg.naturalWidth || headerImg.width;
-        offscreen.height = headerImg.naturalHeight || headerImg.height;
+        // Set canvas size to the color map image size
+        const texW = colorMapImg.naturalWidth || colorMapImg.width;
+        const texH = colorMapImg.naturalHeight || colorMapImg.height;
+        offscreen.width = texW;
+        offscreen.height = texH;
         
-        // Draw the image
-        ctx.drawImage(headerImg, 0, 0);
+        // Store texture dimensions for proper UV mapping
+        textureSize = { width: texW, height: texH };
+        
+        // Draw the COLOR MAP image (not the displayed header)
+        ctx.drawImage(colorMapImg, 0, 0);
         
         // Create WebGL texture
         headerTexture = gl!.createTexture();
@@ -611,15 +692,16 @@
         gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MAG_FILTER, gl!.LINEAR);
         
         headerReady = 1;
-        updateHeaderBounds();
-        console.log('Header texture loaded:', offscreen.width, 'x', offscreen.height);
-        console.log('Header bounds:', headerBounds);
+        updateHeaderBounds(); // Still tracks the VISIBLE header position
       };
       
+      colorMapImg.onload = loadImage;
+      
+      // Also update bounds when the visible header loads (for positioning)
       if (headerImg.complete) {
-        loadImage();
+        updateHeaderBounds();
       } else {
-        headerImg.onload = loadImage;
+        headerImg.onload = () => updateHeaderBounds();
       }
     }
     
@@ -656,6 +738,7 @@
         gl!.uniform1i(headerTextureLocation, 0);
       }
       gl!.uniform4f(headerBoundsLocation, headerBounds.x, headerBounds.y, headerBounds.width, headerBounds.height);
+      gl!.uniform2f(textureSizeLocation, textureSize.width, textureSize.height);
       gl!.uniform1f(headerReadyLocation, headerReady);
       
       // Update from control panel
@@ -672,6 +755,7 @@
       gl!.uniform1f(dotRoundnessLocation, params.dotRoundness);
       gl!.uniform1f(colorPickupRangeLocation, params.colorPickupRange);
       gl!.uniform1f(colorVibrancyLocation, params.colorVibrancy);
+      gl!.uniform1f(colorSoftnessLocation, params.colorSoftness);
 
       gl!.drawArrays(gl!.TRIANGLES, 0, 6);
       requestAnimationFrame(render);
