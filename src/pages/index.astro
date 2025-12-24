@@ -28,14 +28,40 @@ import Layout from '../layouts/Layout.astro';
           aria-hidden="true"
         />
       </div>
+      
+      <!-- Password Input -->
+      <div class="password-container" style="margin-top: 48px;">
+        <form id="password-form" class="password-form">
+          <label for="password-input" class="input-label">ENTER ACCESS CODE</label>
+          <div class="input-glitch-container">
+            <div class="input-wrapper">
+            <span class="input-prompt">►</span>
+            <input 
+              type="password" 
+              id="password-input"
+              class="password-input"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <span id="custom-cursor" class="custom-cursor"></span>
+            <button type="submit" class="submit-btn" aria-label="Submit">
+              <span class="submit-arrow">↵</span>
+            </button>
+          </div>
+          <div class="input-glitch-r"></div>
+          <div class="input-glitch-b"></div>
+          </div>
+          <div id="password-status" class="password-status"></div>
+        </form>
+      </div>
     </div>
   </section>
 </Layout>
 
 <style>
   :root {
-    --glitch-duration: 200ms;
-    --glitch-intensity: 8px;
+    --glitch-duration: 380ms;
+    --glitch-intensity: 20px;
   }
   
   .glitch-container {
@@ -157,24 +183,403 @@ import Layout from '../layouts/Layout.astro';
       transform: translate(calc(var(--glitch-intensity) * 0.25), 0) skewX(0.3deg);
     }
   }
+  
+  /* Password Input - ANSI/Pixel Style */
+  .password-container {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .password-form {
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .input-label {
+    display: block;
+    font-family: 'Courier New', 'Consolas', monospace;
+    font-weight: bold;
+    font-size: 12px;
+    color: #22d3ee;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    text-align: left;
+  }
+  
+  .input-wrapper {
+    display: flex;
+    align-items: center;
+    background: #0D0E11;
+    border: 2px solid #22d3ee;
+    padding: 0;
+    font-family: 'Courier New', 'Consolas', monospace;
+    position: relative;
+  }
+  
+  .input-prompt {
+    color: #22d3ee;
+    padding: 12px;
+    padding-right: 8px;
+    font-size: 16px;
+    animation: blink 1s step-end infinite;
+  }
+  
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+  
+  .password-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #22d3ee;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 12px 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    outline: none;
+    caret-color: transparent; /* Hide native caret */
+  }
+  
+  /* Custom cursor */
+  .custom-cursor {
+    position: absolute;
+    width: 2px;
+    height: 18px;
+    background: #22d3ee;
+    pointer-events: none;
+    opacity: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .input-wrapper:focus-within .custom-cursor {
+    opacity: 1;
+  }
+  
+  .input-wrapper:focus-within {
+    background: #0E181C;
+  }
+  
+  .submit-btn {
+    background: transparent;
+    border: none;
+    border-left: 2px solid #22d3ee;
+    color: #22d3ee;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+  
+  .submit-btn:hover {
+    background: rgba(34, 211, 238, 0.2);
+  }
+  
+  .submit-arrow {
+    display: block;
+  }
+  
+  .password-status {
+    margin-top: 12px;
+    font-family: 'Courier New', 'Consolas', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-align: left;
+    min-height: 20px;
+  }
+  
+  .password-status.error {
+    color: #f87171;
+  }
+  
+  .password-status.success {
+    color: #4ade80;
+  }
+  
+  .password-status.loading {
+    color: #fbbf24;
+  }
+  
+  /* Input wrapper states */
+  .input-wrapper.error {
+    border-color: #f87171;
+    animation: shake 0.4s ease-in-out;
+  }
+  
+  .input-wrapper.success {
+    border-color: #4ade80;
+  }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+  
+  /* Input glitch effect */
+  .input-glitch-container {
+    position: relative;
+  }
+  
+  .input-glitch-r,
+  .input-glitch-b {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    opacity: 0;
+    border: 2px solid transparent;
+  }
+  
+  .input-glitch-r {
+    border-color: #f87171;
+    mix-blend-mode: screen;
+  }
+  
+  .input-glitch-b {
+    border-color: #60a5fa;
+    mix-blend-mode: screen;
+  }
+  
+  .input-wrapper.input-glitching {
+    animation: input-glitch-base 380ms steps(3) forwards;
+  }
+  
+  .input-wrapper.input-glitching ~ .input-glitch-r {
+    opacity: 0.8;
+    animation: input-glitch-r 380ms steps(2) forwards;
+  }
+  
+  .input-wrapper.input-glitching ~ .input-glitch-b {
+    opacity: 0.8;
+    animation: input-glitch-b 380ms steps(2) forwards;
+  }
+  
+  @keyframes input-glitch-r {
+    0% {
+      transform: translate(4px, -2px);
+      clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+    }
+    25% {
+      transform: translate(-6px, 1px);
+      clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+    }
+    50% {
+      transform: translate(3px, -1px);
+      clip-path: polygon(0 20%, 100% 20%, 100% 60%, 0 60%);
+    }
+    75% {
+      transform: translate(-4px, 2px);
+      clip-path: polygon(0 70%, 100% 70%, 100% 90%, 0 90%);
+    }
+    100% {
+      transform: translate(0, 0);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes input-glitch-b {
+    0% {
+      transform: translate(-3px, 2px);
+      clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+    }
+    25% {
+      transform: translate(5px, -1px);
+      clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+    }
+    50% {
+      transform: translate(-4px, 1px);
+      clip-path: polygon(0 40%, 100% 40%, 100% 80%, 0 80%);
+    }
+    75% {
+      transform: translate(3px, -2px);
+      clip-path: polygon(0 10%, 100% 10%, 100% 30%, 0 30%);
+    }
+    100% {
+      transform: translate(0, 0);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes input-glitch-base {
+    0%, 100% {
+      transform: translate(0, 0) skewX(0deg);
+    }
+    20% {
+      transform: translate(-3px, 0) skewX(-1deg);
+    }
+    40% {
+      transform: translate(3px, 0) skewX(1deg);
+    }
+    60% {
+      transform: translate(-2px, 0) skewX(-0.5deg);
+    }
+    80% {
+      transform: translate(2px, 0) skewX(0.5deg);
+    }
+  }
 </style>
 
 <script>
   const container = document.getElementById('glitch-container');
   
+  function triggerGlitch() {
+    if (!container) return;
+    
+    // Add glitching class
+    container.classList.add('glitching');
+    
+    // Get duration from CSS variable (or default to 200ms)
+    const duration = parseInt(getComputedStyle(document.documentElement)
+      .getPropertyValue('--glitch-duration')) || 200;
+    
+    // Remove after duration
+    setTimeout(() => {
+      container.classList.remove('glitching');
+    }, duration);
+  }
+  
   if (container) {
-    container.addEventListener('click', () => {
-      // Add glitching class
-      container.classList.add('glitching');
+    // Trigger glitch on click
+    container.addEventListener('click', triggerGlitch);
+    
+    // Trigger glitch once after page fully loads + 2 seconds
+    window.addEventListener('load', () => {
+      setTimeout(triggerGlitch, 2000);
       
-      // Get duration from CSS variable (or default to 200ms)
-      const duration = parseInt(getComputedStyle(document.documentElement)
-        .getPropertyValue('--glitch-duration')) || 200;
+      // Continue triggering every 12 seconds
+      setInterval(triggerGlitch, 12000);
+    });
+  }
+  
+  // Custom cursor positioning
+  const customCursor = document.getElementById('custom-cursor') as HTMLSpanElement;
+  const passwordInputForCursor = document.getElementById('password-input') as HTMLInputElement;
+  
+  function updateCursorPosition() {
+    if (!customCursor || !passwordInputForCursor) return;
+    
+    // Create a temporary span to measure text width
+    const measureSpan = document.createElement('span');
+    measureSpan.style.cssText = `
+      font-family: 'Courier New', Consolas, monospace;
+      font-size: 14px;
+      letter-spacing: 2px;
+      visibility: hidden;
+      position: absolute;
+      white-space: pre;
+    `;
+    // Use bullet characters for password masking (same as browser default)
+    measureSpan.textContent = '•'.repeat(passwordInputForCursor.value.length);
+    document.body.appendChild(measureSpan);
+    
+    const textWidth = measureSpan.offsetWidth;
+    document.body.removeChild(measureSpan);
+    
+    // Get the input's padding-left (8px) + prompt width
+    const inputRect = passwordInputForCursor.getBoundingClientRect();
+    const wrapperRect = passwordInputForCursor.parentElement!.getBoundingClientRect();
+    const inputOffsetLeft = inputRect.left - wrapperRect.left;
+    
+    // Position cursor after the text
+    customCursor.style.left = `${inputOffsetLeft + 8 + textWidth}px`;
+  }
+  
+  if (passwordInputForCursor && customCursor) {
+    passwordInputForCursor.addEventListener('input', updateCursorPosition);
+    passwordInputForCursor.addEventListener('focus', updateCursorPosition);
+    // Update on any selection change
+    document.addEventListener('selectionchange', () => {
+      if (document.activeElement === passwordInputForCursor) {
+        updateCursorPosition();
+      }
+    });
+  }
+  
+  // Password form handler
+  const passwordForm = document.getElementById('password-form') as HTMLFormElement;
+  const passwordInput = document.getElementById('password-input') as HTMLInputElement;
+  const passwordStatus = document.getElementById('password-status') as HTMLDivElement;
+  const inputWrapper = document.querySelector('.input-wrapper') as HTMLDivElement;
+  
+  // Input glitch effect function
+  function triggerInputGlitch() {
+    if (!inputWrapper) return;
+    inputWrapper.classList.add('input-glitching');
+    setTimeout(() => {
+      inputWrapper.classList.remove('input-glitching');
+    }, 380);
+  }
+  
+  if (passwordForm && passwordInput && passwordStatus && inputWrapper) {
+    passwordForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
       
-      // Remove after duration
-      setTimeout(() => {
-        container.classList.remove('glitching');
-      }, duration);
+      const password = passwordInput.value.trim();
+      
+      if (!password) {
+        inputWrapper.classList.add('error');
+        passwordStatus.textContent = 'ACCESS CODE REQUIRED';
+        passwordStatus.className = 'password-status error';
+        triggerInputGlitch();
+        setTimeout(() => inputWrapper.classList.remove('error'), 400);
+        return;
+      }
+      
+      // Show loading state
+      passwordStatus.textContent = 'VALIDATING...';
+      passwordStatus.className = 'password-status loading';
+      inputWrapper.classList.remove('error', 'success');
+      
+      try {
+        const response = await fetch('/api/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.redirectUrl) {
+          // Success - show message and redirect
+          inputWrapper.classList.add('success');
+          passwordStatus.textContent = 'ACCESS GRANTED';
+          passwordStatus.className = 'password-status success';
+          
+          // Trigger glitch effect before redirect
+          triggerGlitch();
+          
+          // TODO: Re-enable redirect for production
+          // setTimeout(() => {
+          //   window.location.href = data.redirectUrl;
+          // }, 800);
+        } else {
+          // Invalid password
+          inputWrapper.classList.add('error');
+          passwordStatus.textContent = 'ACCESS DENIED';
+          passwordStatus.className = 'password-status error';
+          passwordInput.value = '';
+          updateCursorPosition();
+          triggerInputGlitch();
+          
+          setTimeout(() => inputWrapper.classList.remove('error'), 400);
+        }
+      } catch (error) {
+        // Network or server error
+        inputWrapper.classList.add('error');
+        passwordStatus.textContent = 'SYSTEM ERROR';
+        passwordStatus.className = 'password-status error';
+        triggerInputGlitch();
+        
+        setTimeout(() => inputWrapper.classList.remove('error'), 400);
+      }
     });
   }
 </script>
