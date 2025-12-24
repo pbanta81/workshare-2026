@@ -698,6 +698,11 @@ import Layout from '../layouts/Layout.astro';
             const passwordContainer = document.querySelector('.password-container') as HTMLElement;
             if (passwordContainer) {
               passwordContainer.classList.add('fade-out');
+              
+              // Remove from DOM after fade completes to clear password manager artifacts
+              setTimeout(() => {
+                passwordContainer.remove();
+              }, 1500);
             }
             
             // After input fade completes (1500ms), move heading to top
