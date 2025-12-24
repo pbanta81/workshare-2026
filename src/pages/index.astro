@@ -116,9 +116,10 @@ import Layout from '../layouts/Layout.astro';
       margin-left: -12.5vw;
     }
     
-    /* Prevent default scroll behavior on input focus */
-    .password-input {
-      scroll-margin-top: 0;
+    /* Position content in upper portion so keyboard doesn't push it much */
+    section.safe-area-override {
+      justify-content: flex-start !important;
+      padding-top: 15vh !important;
     }
   }
   
@@ -738,25 +739,6 @@ import Layout from '../layouts/Layout.astro';
         triggerInputGlitch();
         
         setTimeout(() => inputWrapper.classList.remove('error'), 400);
-      }
-    });
-  }
-  
-  // Mobile keyboard handling - limit how much content shifts
-  const isMobile = window.matchMedia('(max-width: 767px)').matches;
-  if (isMobile && passwordInput) {
-    const section = document.querySelector('section') as HTMLElement;
-    
-    passwordInput.addEventListener('focus', () => {
-      if (section) {
-        section.style.transition = 'transform 0.3s ease-out';
-        section.style.transform = 'translateY(-100px)';
-      }
-    });
-    
-    passwordInput.addEventListener('blur', () => {
-      if (section) {
-        section.style.transform = 'translateY(0)';
       }
     });
   }
