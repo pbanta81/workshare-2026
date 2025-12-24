@@ -530,25 +530,25 @@ import Layout from '../layouts/Layout.astro';
   
   @keyframes input-glitch-base {
     0%, 100% {
-      transform: translate(0, 0) skewX(0deg);
+      transform: translate(0, 0) skewX(0deg) skewY(0deg);
     }
     15% {
-      transform: translate(-8px, 0) skewX(-4deg);
+      transform: translate(-8px, 3px) skewX(-4deg) skewY(1deg);
     }
     30% {
-      transform: translate(10px, 0) skewX(3deg);
+      transform: translate(10px, -4px) skewX(3deg) skewY(-2deg);
     }
     45% {
-      transform: translate(-6px, 0) skewX(-3deg);
+      transform: translate(-6px, 5px) skewX(-3deg) skewY(1.5deg);
     }
     60% {
-      transform: translate(8px, 0) skewX(4deg);
+      transform: translate(8px, -3px) skewX(4deg) skewY(-1deg);
     }
     75% {
-      transform: translate(-4px, 0) skewX(-2deg);
+      transform: translate(-4px, 4px) skewX(-2deg) skewY(2deg);
     }
     90% {
-      transform: translate(5px, 0) skewX(2deg);
+      transform: translate(5px, -2px) skewX(2deg) skewY(-1deg);
     }
   }
 </style>
