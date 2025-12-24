@@ -116,15 +116,10 @@ import Layout from '../layouts/Layout.astro';
       margin-left: -12.5vw;
     }
     
-    /* Fix section in place so keyboard can't push it */
+    /* Pin content to bottom so keyboard pushes it into view */
     section.safe-area-override {
-      position: fixed !important;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      justify-content: flex-start !important;
-      padding-top: 10vh !important;
+      justify-content: flex-end !important;
+      padding-bottom: 48px !important;
     }
   }
   
