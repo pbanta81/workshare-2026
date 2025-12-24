@@ -27,73 +27,88 @@
     <div class="control-section">
       <h4>Hover Effect</h4>
       <label>
-        Radius: <span id="hoverRadiusVal">200</span>
-        <input type="range" id="hoverRadius" min="50" max="400" value="200">
+        <span class="label-text">Radius:</span>
+        <input type="number" id="hoverRadiusVal" value="300" min="50" max="400">
+        <input type="range" id="hoverRadius" min="50" max="400" value="300">
       </label>
       <label>
-        Fade Distance: <span id="hoverFadeVal">100</span>
+        <span class="label-text">Fade Distance:</span>
+        <input type="number" id="hoverFadeVal" value="100" min="20" max="300">
         <input type="range" id="hoverFade" min="20" max="300" value="100">
       </label>
       <label>
-        Max Scale: <span id="hoverMaxScaleVal">15</span>
-        <input type="range" id="hoverMaxScale" min="2" max="16" value="15">
+        <span class="label-text">Max Scale:</span>
+        <input type="number" id="hoverMaxScaleVal" value="16" min="2" max="16">
+        <input type="range" id="hoverMaxScale" min="2" max="16" value="16">
       </label>
       <label>
-        Repel Strength: <span id="repelStrengthVal">19</span>
-        <input type="range" id="repelStrength" min="0" max="30" value="19">
+        <span class="label-text">Repel Strength:</span>
+        <input type="number" id="repelStrengthVal" value="23" min="0" max="30">
+        <input type="range" id="repelStrength" min="0" max="30" value="23">
       </label>
       <label>
-        Color Intensity: <span id="colorIntensityVal">0</span>
-        <input type="range" id="colorIntensity" min="0" max="1" value="0" step="0.05">
+        <span class="label-text">Color Intensity:</span>
+        <input type="number" id="colorIntensityVal" value="0.2" min="0" max="1" step="0.05">
+        <input type="range" id="colorIntensity" min="0" max="1" value="0.2" step="0.05">
       </label>
       <label>
-        Gumminess: <span id="gumminessVal">0.08</span>
+        <span class="label-text">Gumminess:</span>
+        <input type="number" id="gumminessVal" value="0.08" min="0.02" max="0.3" step="0.01">
         <input type="range" id="gumminess" min="0.02" max="0.3" value="0.08" step="0.01">
       </label>
     </div>
     <div class="control-section">
       <h4>Click Ripple</h4>
       <label>
-        Speed: <span id="rippleSpeedVal">1400</span>
-        <input type="range" id="rippleSpeed" min="200" max="2000" value="1400">
+        <span class="label-text">Speed:</span>
+        <input type="number" id="rippleSpeedVal" value="1800" min="200" max="2000">
+        <input type="range" id="rippleSpeed" min="200" max="2000" value="1800">
       </label>
       <label>
-        Width: <span id="rippleWidthVal">200</span>
-        <input type="range" id="rippleWidth" min="20" max="400" value="200">
+        <span class="label-text">Width:</span>
+        <input type="number" id="rippleWidthVal" value="366" min="20" max="400">
+        <input type="range" id="rippleWidth" min="20" max="400" value="366">
       </label>
       <label>
-        Duration: <span id="rippleDurationVal">1.0</span>s
-        <input type="range" id="rippleDuration" min="0.3" max="4" value="1.0" step="0.1">
+        <span class="label-text">Duration:</span>
+        <input type="number" id="rippleDurationVal" value="0.5" min="0.3" max="4" step="0.1">
+        <input type="range" id="rippleDuration" min="0.3" max="4" value="0.5" step="0.1">
       </label>
       <label>
-        Color Intensity: <span id="rippleColorIntensityVal">0</span>
+        <span class="label-text">Color Intensity:</span>
+        <input type="number" id="rippleColorIntensityVal" value="0" min="0" max="1" step="0.05">
         <input type="range" id="rippleColorIntensity" min="0" max="1" value="0" step="0.05">
       </label>
     </div>
     <div class="control-section">
       <h4>Grid</h4>
       <label>
-        Base Dot Size: <span id="baseDotSizeVal">3</span>
+        <span class="label-text">Base Dot Size:</span>
+        <input type="number" id="baseDotSizeVal" value="3" min="1" max="6">
         <input type="range" id="baseDotSize" min="1" max="6" value="3">
       </label>
       <label>
-        Dot Roundness: <span id="dotRoundnessVal">0</span>
+        <span class="label-text">Dot Roundness:</span>
+        <input type="number" id="dotRoundnessVal" value="0" min="0" max="1" step="0.1">
         <input type="range" id="dotRoundness" min="0" max="1" value="0" step="0.1">
       </label>
     </div>
     <div class="control-section">
       <h4>Image Color Pickup</h4>
       <label>
-        Range: <span id="colorPickupRangeVal">400</span>px
+        <span class="label-text">Range:</span>
+        <input type="number" id="colorPickupRangeVal" value="400" min="50" max="800">
         <input type="range" id="colorPickupRange" min="50" max="800" value="400">
       </label>
       <label>
-        Vibrancy: <span id="colorVibrancyVal">0.8</span>
+        <span class="label-text">Vibrancy:</span>
+        <input type="number" id="colorVibrancyVal" value="0.8" min="0" max="1" step="0.05">
         <input type="range" id="colorVibrancy" min="0" max="1" value="0.8" step="0.05">
       </label>
       <label>
-        Softness: <span id="colorSoftnessVal">30</span>px
-        <input type="range" id="colorSoftness" min="5" max="100" value="30">
+        <span class="label-text">Softness:</span>
+        <input type="number" id="colorSoftnessVal" value="20" min="5" max="100">
+        <input type="range" id="colorSoftness" min="5" max="100" value="20">
       </label>
     </div>
   </div>
@@ -183,13 +198,43 @@
   
   label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  
+  .label-text {
+    display: inline-block;
+    min-width: 100px;
+  }
+  
+  input[type="number"] {
+    width: 60px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #e4e4e7;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-family: inherit;
+    text-align: right;
+    float: right;
+  }
+  
+  input[type="number"]:focus {
+    outline: none;
+    border-color: #22d3ee;
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    opacity: 0.5;
   }
   
   input[type="range"] {
     width: 100%;
-    margin-top: 4px;
+    margin-top: 6px;
     accent-color: #22d3ee;
+    clear: both;
   }
 </style>
 
@@ -199,21 +244,21 @@
   
   // Default values (for reset functionality)
   const defaults = {
-    hoverRadius: 200,
+    hoverRadius: 300,
     hoverFade: 100,
-    hoverMaxScale: 15,
-    repelStrength: 19,
-    colorIntensity: 0,
+    hoverMaxScale: 16,
+    repelStrength: 23,
+    colorIntensity: 0.2,
     gumminess: 0.08,
-    rippleSpeed: 1400,
-    rippleWidth: 200,
-    rippleDuration: 1.0,
+    rippleSpeed: 1800,
+    rippleWidth: 366,
+    rippleDuration: 0.5,
     rippleColorIntensity: 0,
     baseDotSize: 3,
     dotRoundness: 0,
     colorPickupRange: 400,
     colorVibrancy: 0.8,
-    colorSoftness: 30,
+    colorSoftness: 20,
   };
   
   // Control panel state (starts with defaults)
@@ -245,13 +290,37 @@
     ];
     
     controls.forEach(id => {
-      const input = document.getElementById(id) as HTMLInputElement;
-      const valSpan = document.getElementById(id + 'Val')!;
+      const rangeInput = document.getElementById(id) as HTMLInputElement;
+      const numberInput = document.getElementById(id + 'Val') as HTMLInputElement;
       
-      input.addEventListener('input', () => {
-        const val = parseFloat(input.value);
+      // Range slider updates number input
+      rangeInput.addEventListener('input', () => {
+        const val = parseFloat(rangeInput.value);
         (params as any)[id] = val;
-        valSpan.textContent = val.toString();
+        numberInput.value = val.toString();
+      });
+      
+      // Number input updates range slider
+      numberInput.addEventListener('input', () => {
+        const val = parseFloat(numberInput.value);
+        if (!isNaN(val)) {
+          (params as any)[id] = val;
+          rangeInput.value = val.toString();
+        }
+      });
+      
+      // Also update on blur (when user finishes typing)
+      numberInput.addEventListener('blur', () => {
+        const val = parseFloat(numberInput.value);
+        if (!isNaN(val)) {
+          // Clamp to range limits
+          const min = parseFloat(rangeInput.min);
+          const max = parseFloat(rangeInput.max);
+          const clamped = Math.max(min, Math.min(max, val));
+          (params as any)[id] = clamped;
+          rangeInput.value = clamped.toString();
+          numberInput.value = clamped.toString();
+        }
       });
     });
     
@@ -259,13 +328,13 @@
     const resetBtn = document.getElementById('reset-controls')!;
     resetBtn.addEventListener('click', () => {
       controls.forEach(id => {
-        const input = document.getElementById(id) as HTMLInputElement;
-        const valSpan = document.getElementById(id + 'Val')!;
+        const rangeInput = document.getElementById(id) as HTMLInputElement;
+        const numberInput = document.getElementById(id + 'Val') as HTMLInputElement;
         const defaultVal = (defaults as any)[id];
         
-        input.value = defaultVal.toString();
+        rangeInput.value = defaultVal.toString();
+        numberInput.value = defaultVal.toString();
         (params as any)[id] = defaultVal;
-        valSpan.textContent = defaultVal.toString();
       });
     });
   }
