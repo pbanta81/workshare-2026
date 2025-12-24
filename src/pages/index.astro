@@ -748,26 +748,4 @@ import Layout from '../layouts/Layout.astro';
     });
   }
   
-  // iOS keyboard fix - use fixed positioning to prevent any movement
-  const section = document.querySelector('section') as HTMLElement;
-  const passwordInputEl = document.querySelector('.password-input') as HTMLInputElement;
-  
-  if (section && passwordInputEl) {
-    passwordInputEl.addEventListener('focus', () => {
-      // Lock the section in place with fixed positioning
-      const rect = section.getBoundingClientRect();
-      section.style.position = 'fixed';
-      section.style.top = `${rect.top}px`;
-      section.style.left = '0';
-      section.style.right = '0';
-    });
-    
-    passwordInputEl.addEventListener('blur', () => {
-      // Restore normal positioning
-      section.style.position = '';
-      section.style.top = '';
-      section.style.left = '';
-      section.style.right = '';
-    });
-  }
 </script>
