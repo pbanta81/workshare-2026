@@ -203,6 +203,11 @@
     display: none;
   }
   
+  /* Hide header border when body is collapsed */
+  #shader-controls:has(.control-body.collapsed) .control-header {
+    border-bottom: none;
+  }
+  
   .control-section {
     margin-bottom: 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -316,6 +321,8 @@
     colorPickupRange: 400,
     colorVibrancy: 0.8,
     colorSoftness: 20,
+    glitchDuration: 380,
+    glitchIntensity: 20,
   };
   
   // Control panel state (starts with defaults)
@@ -431,6 +438,7 @@
     // Reset to defaults button
     const resetBtn = document.getElementById('reset-controls')!;
     resetBtn.addEventListener('click', () => {
+      // Reset shader controls
       controls.forEach(id => {
         const rangeInput = document.getElementById(id) as HTMLInputElement;
         const numberInput = document.getElementById(id + 'Val') as HTMLInputElement;
@@ -440,6 +448,13 @@
         numberInput.value = defaultVal.toString();
         (params as any)[id] = defaultVal;
       });
+      
+      // Reset glitch controls (CSS-based)
+      glitchDurationRange.value = defaults.glitchDuration.toString();
+      glitchDurationNum.value = defaults.glitchDuration.toString();
+      glitchIntensityRange.value = defaults.glitchIntensity.toString();
+      glitchIntensityNum.value = defaults.glitchIntensity.toString();
+      updateGlitchVars();
     });
   }
   
