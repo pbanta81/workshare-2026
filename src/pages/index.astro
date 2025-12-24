@@ -6,13 +6,166 @@ import Layout from '../layouts/Layout.astro';
   <!-- Hero Section -->
   <section class="min-h-screen flex flex-col items-center justify-center px-6">
     <div class="w-full max-w-4xl mx-auto animate-fade-in opacity-0">
-      <img 
-        src="/ansi-heading.png" 
-        alt="Patrick Banta" 
-        class="w-full h-auto"
-        style="image-rendering: pixelated;"
-      />
+      <div class="glitch-container" id="glitch-container">
+        <img 
+          src="/ansi-heading.png" 
+          alt="Patrick Banta" 
+          class="glitch-img glitch-base"
+          style="image-rendering: pixelated;"
+        />
+        <img 
+          src="/ansi-heading.png" 
+          alt="" 
+          class="glitch-img glitch-r"
+          style="image-rendering: pixelated;"
+          aria-hidden="true"
+        />
+        <img 
+          src="/ansi-heading.png" 
+          alt="" 
+          class="glitch-img glitch-b"
+          style="image-rendering: pixelated;"
+          aria-hidden="true"
+        />
+      </div>
     </div>
   </section>
-
 </Layout>
+
+<style>
+  .glitch-container {
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .glitch-img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .glitch-r,
+  .glitch-b {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  .glitch-r {
+    mix-blend-mode: screen;
+  }
+  
+  .glitch-b {
+    mix-blend-mode: screen;
+  }
+  
+  /* Active glitch state */
+  .glitch-container.glitching .glitch-r,
+  .glitch-container.glitching .glitch-b {
+    opacity: 0.8;
+  }
+  
+  .glitch-container.glitching .glitch-r {
+    animation: glitch-r 0.3s steps(2) infinite;
+  }
+  
+  .glitch-container.glitching .glitch-b {
+    animation: glitch-b 0.3s steps(2) infinite;
+  }
+  
+  .glitch-container.glitching .glitch-base {
+    animation: glitch-base 0.4s steps(3) infinite;
+  }
+  
+  @keyframes glitch-r {
+    0% {
+      transform: translate(5px, -2px);
+      clip-path: polygon(0 20%, 100% 20%, 100% 30%, 0 30%);
+      filter: hue-rotate(-60deg) saturate(2);
+    }
+    25% {
+      transform: translate(-8px, 1px);
+      clip-path: polygon(0 60%, 100% 60%, 100% 65%, 0 65%);
+      filter: hue-rotate(-60deg) saturate(2);
+    }
+    50% {
+      transform: translate(3px, -1px);
+      clip-path: polygon(0 80%, 100% 80%, 100% 90%, 0 90%);
+      filter: hue-rotate(-60deg) saturate(2);
+    }
+    75% {
+      transform: translate(-5px, 2px);
+      clip-path: polygon(0 10%, 100% 10%, 100% 20%, 0 20%);
+      filter: hue-rotate(-60deg) saturate(2);
+    }
+    100% {
+      transform: translate(6px, -2px);
+      clip-path: polygon(0 45%, 100% 45%, 100% 55%, 0 55%);
+      filter: hue-rotate(-60deg) saturate(2);
+    }
+  }
+  
+  @keyframes glitch-b {
+    0% {
+      transform: translate(-4px, 2px);
+      clip-path: polygon(0 70%, 100% 70%, 100% 80%, 0 80%);
+      filter: hue-rotate(60deg) saturate(2);
+    }
+    25% {
+      transform: translate(6px, -1px);
+      clip-path: polygon(0 35%, 100% 35%, 100% 45%, 0 45%);
+      filter: hue-rotate(60deg) saturate(2);
+    }
+    50% {
+      transform: translate(-5px, 1px);
+      clip-path: polygon(0 5%, 100% 5%, 100% 15%, 0 15%);
+      filter: hue-rotate(60deg) saturate(2);
+    }
+    75% {
+      transform: translate(4px, -2px);
+      clip-path: polygon(0 50%, 100% 50%, 100% 60%, 0 60%);
+      filter: hue-rotate(60deg) saturate(2);
+    }
+    100% {
+      transform: translate(-6px, 1px);
+      clip-path: polygon(0 85%, 100% 85%, 100% 95%, 0 95%);
+      filter: hue-rotate(60deg) saturate(2);
+    }
+  }
+  
+  @keyframes glitch-base {
+    0%, 100% {
+      transform: translate(0, 0) skewX(0deg);
+    }
+    20% {
+      transform: translate(-3px, 0) skewX(-0.5deg);
+    }
+    40% {
+      transform: translate(3px, 0) skewX(0.5deg);
+    }
+    60% {
+      transform: translate(-2px, 0) skewX(-0.3deg);
+    }
+    80% {
+      transform: translate(2px, 0) skewX(0.3deg);
+    }
+  }
+</style>
+
+<script>
+  const container = document.getElementById('glitch-container');
+  
+  if (container) {
+    container.addEventListener('click', () => {
+      // Add glitching class
+      container.classList.add('glitching');
+      
+      // Remove after duration (match with CSS animation)
+      setTimeout(() => {
+        container.classList.remove('glitching');
+      }, 400);
+    });
+  }
+</script>
