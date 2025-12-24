@@ -4,7 +4,7 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout>
   <!-- Hero Section -->
-  <section class="h-screen flex flex-col justify-center md:items-center">
+  <section class="min-h-[100dvh] flex flex-col justify-center md:items-center safe-area-override">
     <div class="w-full md:max-w-4xl md:mx-auto md:px-6 animate-fade-in opacity-0">
       <div class="glitch-container" id="glitch-container">
         <img 
@@ -101,6 +101,24 @@ import Layout from '../layouts/Layout.astro';
     width: 100%;
     height: auto;
     display: block;
+  }
+  
+  /* Mobile: Override safe area and make image full width */
+  @media (max-width: 767px) {
+    .safe-area-override {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    
+    .glitch-container {
+      width: 100vw;
+      max-width: none;
+    }
+    
+    .glitch-img {
+      width: 100vw;
+      max-width: none;
+    }
   }
   
   .glitch-r,
