@@ -4,7 +4,7 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout>
   <!-- Hero Section -->
-  <section class="min-h-[100dvh] flex flex-col justify-end pb-12 md:pb-0 md:justify-center md:items-center safe-area-override">
+  <section class="app-shell flex flex-col justify-end pb-12 md:pb-0 md:justify-center md:items-center">
     <div class="w-full md:max-w-4xl md:mx-auto md:px-6 animate-fade-in opacity-0">
       <div class="glitch-container" id="glitch-container">
         <img 
@@ -64,16 +64,33 @@ import Layout from '../layouts/Layout.astro';
     --glitch-intensity: 20px;
   }
   
+  /* App shell - anchored to visual viewport */
+  .app-shell {
+    min-height: 100vh;
+    min-height: 100svh;
+    height: var(--vvh, 100svh);
+    transform: translateY(var(--vvTop, 0px));
+    transition: height 0.1s ease-out, transform 0.1s ease-out;
+  }
+  
+  @media (min-width: 768px) {
+    .app-shell {
+      min-height: 100vh;
+      height: auto;
+      transform: none;
+    }
+  }
+  
   /* Success transition animations */
   .password-container {
     transition: opacity 1.5s ease-out;
-    margin-top: 24px;
+    margin-top: 12px;
     padding: 0 16px;
   }
   
   @media (min-width: 768px) {
     .password-container {
-      margin-top: 48px;
+      margin-top: 24px;
       padding: 0;
     }
   }
@@ -116,11 +133,6 @@ import Layout from '../layouts/Layout.astro';
       margin-left: -12.5vw;
     }
     
-    /* Pin content to bottom so keyboard pushes it into view */
-    section.safe-area-override {
-      justify-content: flex-end !important;
-      padding-bottom: 48px !important;
-    }
   }
   
   .glitch-r,
@@ -772,32 +784,17 @@ import Layout from '../layouts/Layout.astro';
     });
   }
   
-  // iOS keyboard fix: capture position BEFORE keyboard, restore AFTER
-  const pwInputEl = document.querySelector('.password-input');
-  const sectionEl = document.querySelector('section');
-  let savedTop = 0;
+  // Visual Viewport API - anchor UI to actual visible area on iOS
+  function updateViewportVars() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    document.documentElement.style.setProperty('--vvh', `${vv.height}px`);
+    document.documentElement.style.setProperty('--vvTop', `${vv.offsetTop}px`);
+  }
   
-  if (pwInputEl && sectionEl) {
-    // Capture position on touchstart (before keyboard opens)
-    pwInputEl.addEventListener('touchstart', () => {
-      savedTop = sectionEl.getBoundingClientRect().top;
-    }, { passive: true });
-
-    pwInputEl.addEventListener('focus', () => {
-      // Wait for keyboard, then restore to saved position
-      setTimeout(() => {
-        sectionEl.style.position = 'fixed';
-        sectionEl.style.top = `${savedTop}px`;
-        sectionEl.style.left = '0';
-        sectionEl.style.right = '0';
-      }, 350);
-    });
-
-    pwInputEl.addEventListener('blur', () => {
-      sectionEl.style.position = '';
-      sectionEl.style.top = '';
-      sectionEl.style.left = '';
-      sectionEl.style.right = '';
-    });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', updateViewportVars);
+    window.visualViewport.addEventListener('scroll', updateViewportVars);
+    updateViewportVars();
   }
 </script>
