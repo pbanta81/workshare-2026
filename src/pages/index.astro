@@ -60,17 +60,6 @@ import Layout from '../layouts/Layout.astro';
   <!-- Portfolio Content (loaded dynamically after successful password) -->
   <div id="portfolio-content" class="portfolio-content hidden">
     <div class="portfolio-inner">
-      <header class="portfolio-header">
-        <h1 id="portfolio-title" class="portfolio-title"></h1>
-        <div class="portfolio-meta">
-          <span id="portfolio-client" class="portfolio-client"></span>
-          <span class="portfolio-divider">•</span>
-          <span id="portfolio-year" class="portfolio-year"></span>
-          <span class="portfolio-divider">•</span>
-          <span id="portfolio-role" class="portfolio-role"></span>
-        </div>
-        <p id="portfolio-summary" class="portfolio-summary"></p>
-      </header>
       <article id="portfolio-body" class="portfolio-body"></article>
     </div>
   </div>
@@ -590,10 +579,8 @@ import Layout from '../layouts/Layout.astro';
     right: 0;
     bottom: 0;
     overflow-y: auto;
-    padding-top: 180px; /* Space for fixed heading */
     opacity: 0;
     transition: opacity 0.8s ease-out;
-    z-index: 5;
   }
   
   .portfolio-content.visible {
@@ -607,7 +594,6 @@ import Layout from '../layouts/Layout.astro';
   .portfolio-inner {
     max-width: 800px;
     margin: 0 auto;
-    padding: 0 24px 80px;
   }
   
   .portfolio-header {
@@ -684,10 +670,6 @@ import Layout from '../layouts/Layout.astro';
   }
   
   @media (min-width: 768px) {
-    .portfolio-content {
-      padding-top: 200px;
-    }
-    
     .portfolio-title {
       font-size: 36px;
     }
@@ -957,12 +939,21 @@ import Layout from '../layouts/Layout.astro';
                     clearInterval(updateInterval);
                     window.dispatchEvent(new CustomEvent('headerMoved'));
                     
-                    // Load portfolio content after heading settles
-                    if (portfolioSlug) {
-                      loadPortfolioContent(portfolioSlug);
-                    } else if (data.redirectUrl) {
-                      // External redirect if no slug
-                      window.location.href = data.redirectUrl;
+                    // Heading stays fixed where it is - just show content below it
+                    const contentEl = document.getElementById('portfolio-content');
+                    const bodyEl = document.getElementById('portfolio-body');
+                    
+                    if (contentEl && bodyEl) {
+                      // Position content below the fixed heading
+                      const headingBottom = glitchContainer.getBoundingClientRect().bottom;
+                      contentEl.style.paddingTop = `${headingBottom + 36}px`;
+                      
+                      // Show the content
+                      bodyEl.innerHTML = '<p style="font-size: 24px; color: #22d3ee;">test</p>';
+                      contentEl.classList.remove('hidden');
+                      requestAnimationFrame(() => {
+                        contentEl.classList.add('visible');
+                      });
                     }
                   }, 1600);
                 });

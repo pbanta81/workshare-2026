@@ -9,6 +9,8 @@ color: "#22d3ee"
 
 ## Project Overview
 
+test
+
 This is a test portfolio entry that demonstrates the content loading system. When a valid password is entered, this content smoothly appears below the heading graphic.
 
 ## The Challenge
