@@ -56,6 +56,24 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </div>
   </section>
+  
+  <!-- Portfolio Content (loaded dynamically after successful password) -->
+  <div id="portfolio-content" class="portfolio-content hidden">
+    <div class="portfolio-inner">
+      <header class="portfolio-header">
+        <h1 id="portfolio-title" class="portfolio-title"></h1>
+        <div class="portfolio-meta">
+          <span id="portfolio-client" class="portfolio-client"></span>
+          <span class="portfolio-divider">•</span>
+          <span id="portfolio-year" class="portfolio-year"></span>
+          <span class="portfolio-divider">•</span>
+          <span id="portfolio-role" class="portfolio-role"></span>
+        </div>
+        <p id="portfolio-summary" class="portfolio-summary"></p>
+      </header>
+      <article id="portfolio-body" class="portfolio-body"></article>
+    </div>
+  </div>
 </Layout>
 
 <style>
@@ -563,6 +581,121 @@ import Layout from '../layouts/Layout.astro';
       transform: translate(5px, -2px) skewX(2deg) skewY(-1deg);
     }
   }
+  
+  /* Portfolio Content Styles */
+  .portfolio-content {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    padding-top: 180px; /* Space for fixed heading */
+    opacity: 0;
+    transition: opacity 0.8s ease-out;
+    z-index: 5;
+  }
+  
+  .portfolio-content.visible {
+    opacity: 1;
+  }
+  
+  .portfolio-content.hidden {
+    display: none;
+  }
+  
+  .portfolio-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+  
+  .portfolio-header {
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(34, 211, 238, 0.2);
+  }
+  
+  .portfolio-title {
+    font-family: 'Courier New', 'Consolas', monospace;
+    font-size: 28px;
+    font-weight: bold;
+    color: #22d3ee;
+    margin: 0 0 16px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  
+  .portfolio-meta {
+    font-family: 'Courier New', 'Consolas', monospace;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 24px;
+  }
+  
+  .portfolio-divider {
+    margin: 0 12px;
+    color: #22d3ee;
+  }
+  
+  .portfolio-summary {
+    font-size: 18px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+  }
+  
+  .portfolio-body {
+    font-size: 16px;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .portfolio-body h2 {
+    font-family: 'Courier New', 'Consolas', monospace;
+    font-size: 20px;
+    font-weight: bold;
+    color: #22d3ee;
+    margin: 48px 0 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .portfolio-body h2:first-child {
+    margin-top: 0;
+  }
+  
+  .portfolio-body p {
+    margin: 0 0 16px;
+  }
+  
+  .portfolio-body ul,
+  .portfolio-body ol {
+    margin: 0 0 16px;
+    padding-left: 24px;
+  }
+  
+  .portfolio-body li {
+    margin-bottom: 8px;
+  }
+  
+  .portfolio-body strong {
+    color: #22d3ee;
+  }
+  
+  @media (min-width: 768px) {
+    .portfolio-content {
+      padding-top: 200px;
+    }
+    
+    .portfolio-title {
+      font-size: 36px;
+    }
+    
+    .portfolio-inner {
+      padding: 0 48px 120px;
+    }
+  }
 </style>
 
 <script>
@@ -594,6 +727,77 @@ import Layout from '../layouts/Layout.astro';
     setTimeout(() => {
       container.classList.remove('flash-white');
     }, 600);
+  }
+  
+  // Load portfolio content from API
+  async function loadPortfolioContent(slug: string) {
+    try {
+      const response = await fetch(`/api/portfolio/${slug}`);
+      const data = await response.json();
+      
+      if (data.error) {
+        console.error('Portfolio load error:', data.error);
+        return;
+      }
+      
+      // Populate content
+      const titleEl = document.getElementById('portfolio-title');
+      const clientEl = document.getElementById('portfolio-client');
+      const yearEl = document.getElementById('portfolio-year');
+      const roleEl = document.getElementById('portfolio-role');
+      const summaryEl = document.getElementById('portfolio-summary');
+      const bodyEl = document.getElementById('portfolio-body');
+      const contentEl = document.getElementById('portfolio-content');
+      
+      if (titleEl) titleEl.textContent = data.frontmatter.title;
+      if (clientEl) clientEl.textContent = data.frontmatter.client;
+      if (yearEl) yearEl.textContent = data.frontmatter.year;
+      if (roleEl) roleEl.textContent = data.frontmatter.role;
+      if (summaryEl) summaryEl.textContent = data.frontmatter.summary;
+      
+      // Parse markdown body to HTML (simple conversion)
+      if (bodyEl && data.body) {
+        bodyEl.innerHTML = parseMarkdown(data.body);
+      }
+      
+      // Show content container
+      if (contentEl) {
+        contentEl.classList.remove('hidden');
+        // Trigger reflow then add visible class for animation
+        requestAnimationFrame(() => {
+          contentEl.classList.add('visible');
+        });
+      }
+      
+    } catch (error) {
+      console.error('Failed to load portfolio:', error);
+    }
+  }
+  
+  // Simple markdown to HTML parser
+  function parseMarkdown(md: string): string {
+    return md
+      // Remove frontmatter
+      .replace(/^---[\s\S]*?---\n*/m, '')
+      // Headers
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      // Bold
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      // Italic
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      // Lists
+      .replace(/^- (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+      // Paragraphs (lines not already wrapped)
+      .split('\n\n')
+      .map(block => {
+        block = block.trim();
+        if (!block) return '';
+        if (block.startsWith('<')) return block;
+        return `<p>${block.replace(/\n/g, ' ')}</p>`;
+      })
+      .join('\n');
   }
   
   if (container) {
@@ -706,8 +910,9 @@ import Layout from '../layouts/Layout.astro';
           // Trigger flash white effect
           triggerFlashWhite();
           
-          // Store portfolio ID for content loading
+          // Store portfolio info for content loading
           const portfolioId = data.portfolioId;
+          const portfolioSlug = data.slug;
           
           // Sequence: flash (600ms) -> fade input (1500ms) -> move heading (2000ms)
           
@@ -751,12 +956,17 @@ import Layout from '../layouts/Layout.astro';
                   setTimeout(() => {
                     clearInterval(updateInterval);
                     window.dispatchEvent(new CustomEvent('headerMoved'));
+                    
+                    // Load portfolio content after heading settles
+                    if (portfolioSlug) {
+                      loadPortfolioContent(portfolioSlug);
+                    } else if (data.redirectUrl) {
+                      // External redirect if no slug
+                      window.location.href = data.redirectUrl;
+                    }
                   }, 1600);
                 });
               }
-              
-              // After heading animation completes (2000ms), could load portfolio content
-              // setTimeout(() => { loadPortfolioContent(portfolioId); }, 2000);
               
             }, 1500);
             

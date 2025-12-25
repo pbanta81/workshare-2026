@@ -29,7 +29,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Check against environment variables
     // Format: PORTFOLIO_1_HASH, PORTFOLIO_1_URL (optional), etc.
-    let matchedPortfolio: { id: number; url?: string } | null = null;
+    let matchedPortfolio: { id: number; url?: string; slug?: string } | null = null;
 
     // Check up to 10 portfolio passwords
     // Use process.env (Vercel) with fallback to import.meta.env (local dev)
@@ -38,9 +38,11 @@ export const POST: APIRoute = async ({ request }) => {
 
       if (storedHash && storedHash === submittedHash) {
         const redirectUrl = process.env[`PORTFOLIO_${i}_URL`] || import.meta.env[`PORTFOLIO_${i}_URL`];
+        const slug = process.env[`PORTFOLIO_${i}_SLUG`] || import.meta.env[`PORTFOLIO_${i}_SLUG`];
         matchedPortfolio = { 
           id: i, 
-          url: redirectUrl || undefined 
+          url: redirectUrl || undefined,
+          slug: slug || undefined
         };
         break;
       }
@@ -50,7 +52,8 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ 
         success: true, 
         portfolioId: matchedPortfolio.id,
-        redirectUrl: matchedPortfolio.url
+        redirectUrl: matchedPortfolio.url,
+        slug: matchedPortfolio.slug
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
