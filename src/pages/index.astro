@@ -327,9 +327,15 @@ import Layout from '../layouts/Layout.astro';
     clip-path: circle(100% at 50% 50%);
   }
   
-  .glitch-container.iris-out {
-    clip-path: circle(0% at 50% 50%);
-    transition: clip-path 0.5s ease-in;
+  .glitch-container.fade-out {
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
+  }
+  
+  /* CRAZY glitch mode - JS-driven random chaos */
+  .glitch-container.glitch-crazy .glitch-r,
+  .glitch-container.glitch-crazy .glitch-b {
+    opacity: 1;
   }
   
   /* Password Input - ANSI/Pixel Style */
@@ -709,6 +715,68 @@ import Layout from '../layouts/Layout.astro';
     }, duration);
   }
   
+  // Crazy random glitch - each frame is unique
+  function triggerCrazyGlitch(duration: number = 800) {
+    if (!container) return;
+    
+    const glitchR = container.querySelector('.glitch-r') as HTMLElement;
+    const glitchB = container.querySelector('.glitch-b') as HTMLElement;
+    const glitchBase = container.querySelector('.glitch-base') as HTMLElement;
+    
+    if (!glitchR || !glitchB || !glitchBase) return;
+    
+    container.classList.add('glitch-crazy');
+    
+    const startTime = Date.now();
+    const intensity = 150;
+    
+    function randomClipPath() {
+      const y1 = Math.random() * 100;
+      const height = 5 + Math.random() * 25;
+      const y2 = Math.min(y1 + height, 100);
+      return `polygon(0 ${y1}%, 100% ${y1}%, 100% ${y2}%, 0 ${y2}%)`;
+    }
+    
+    function tick() {
+      const elapsed = Date.now() - startTime;
+      if (elapsed >= duration) {
+        // Reset everything
+        glitchR.style.transform = '';
+        glitchR.style.clipPath = '';
+        glitchB.style.transform = '';
+        glitchB.style.clipPath = '';
+        glitchBase.style.transform = '';
+        container?.classList.remove('glitch-crazy');
+        return;
+      }
+      
+      // Random transforms for R layer
+      const rX = (Math.random() - 0.5) * intensity * 2;
+      const rY = (Math.random() - 0.5) * intensity;
+      glitchR.style.transform = `translate(${rX}px, ${rY}px)`;
+      glitchR.style.clipPath = randomClipPath();
+      
+      // Random transforms for B layer
+      const bX = (Math.random() - 0.5) * intensity * 2;
+      const bY = (Math.random() - 0.5) * intensity;
+      glitchB.style.transform = `translate(${bX}px, ${bY}px)`;
+      glitchB.style.clipPath = randomClipPath();
+      
+      // Random transforms for base
+      const baseX = (Math.random() - 0.5) * 40;
+      const baseY = (Math.random() - 0.5) * 20;
+      const skew = (Math.random() - 0.5) * 8;
+      const scale = 0.97 + Math.random() * 0.06;
+      glitchBase.style.transform = `translate(${baseX}px, ${baseY}px) skewX(${skew}deg) scale(${scale})`;
+      
+      // Random interval between 30-80ms for organic feel
+      const nextTick = 30 + Math.random() * 50;
+      setTimeout(tick, nextTick);
+    }
+    
+    tick();
+  }
+  
   function triggerFlashWhite() {
     if (!container) return;
     
@@ -721,54 +789,79 @@ import Layout from '../layouts/Layout.astro';
     }, 600);
   }
   
-  // Load portfolio content from API
-  async function loadPortfolioContent(slug: string) {
+  // SPA-style navigation: fetch portfolio page and inject content without full page load
+  // This keeps the WebGL canvas alive during the transition!
+  async function loadPortfolioInPlace(slug: string) {
     try {
-      const response = await fetch(`/api/portfolio/${slug}`);
-      const data = await response.json();
+      // Fetch the portfolio page HTML
+      const response = await fetch(`/portfolio/${slug}`);
+      const html = await response.text();
       
-      if (data.error) {
-        console.error('Portfolio load error:', data.error);
+      // Parse the HTML
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      
+      // Extract the portfolio content (main element)
+      const newMain = doc.querySelector('main.portfolio-page');
+      const newStyles = doc.querySelectorAll('style');
+      
+      if (!newMain) {
+        console.error('Could not find portfolio content');
         return;
       }
       
-      const bodyEl = document.getElementById('portfolio-body');
+      // Inject the portfolio styles (scoped styles from the page)
+      newStyles.forEach(style => {
+        // Clone the style element and add to head
+        const styleClone = style.cloneNode(true) as HTMLStyleElement;
+        styleClone.setAttribute('data-portfolio-style', 'true');
+        document.head.appendChild(styleClone);
+      });
       
-      // Parse markdown body to HTML
-      if (bodyEl && data.body) {
-        bodyEl.innerHTML = parseMarkdown(data.body);
+      // Clone and inject the portfolio content
+      const mainClone = newMain.cloneNode(true) as HTMLElement;
+      
+      // Remove any existing transition overlay from cloned content
+      const existingOverlay = mainClone.querySelector('#page-transition-overlay');
+      if (existingOverlay) existingOverlay.remove();
+      
+      // Make portfolio content scrollable (since body has overflow: hidden for the GL canvas)
+      mainClone.style.cssText = `
+        position: fixed;
+        inset: 0;
+        overflow-y: auto;
+        z-index: 1;
+      `;
+      
+      // Add the portfolio content to the body
+      document.body.appendChild(mainClone);
+      
+      // Update the URL without triggering a page load
+      history.pushState({ slug }, '', `/portfolio/${slug}`);
+      
+      // Update the page title
+      const newTitle = doc.querySelector('title');
+      if (newTitle) {
+        document.title = newTitle.textContent || 'Portfolio';
       }
+      
+      // Trigger the animations (they're CSS-based, so just removing the transition overlay class)
+      // The fadeSlideIn animations will play automatically via CSS
       
     } catch (error) {
       console.error('Failed to load portfolio:', error);
+      // Fallback to regular navigation
+      window.location.href = `/portfolio/${slug}`;
     }
   }
   
-  // Simple markdown to HTML parser
-  function parseMarkdown(md: string): string {
-    return md
-      // Remove frontmatter
-      .replace(/^---[\s\S]*?---\n*/m, '')
-      // Headers
-      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-      // Bold
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      // Italic
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      // Lists
-      .replace(/^- (.+)$/gm, '<li>$1</li>')
-      .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
-      // Paragraphs (lines not already wrapped)
-      .split('\n\n')
-      .map(block => {
-        block = block.trim();
-        if (!block) return '';
-        if (block.startsWith('<')) return block;
-        return `<p>${block.replace(/\n/g, ' ')}</p>`;
-      })
-      .join('\n');
-  }
+  // Handle browser back/forward buttons
+  window.addEventListener('popstate', (event) => {
+    // If going back to home page
+    if (!event.state || !event.state.slug) {
+      window.location.href = '/';
+    }
+  });
   
   if (container) {
     // Trigger glitch on click
@@ -877,41 +970,45 @@ import Layout from '../layouts/Layout.astro';
           passwordStatus.textContent = 'ACCESS GRANTED';
           passwordStatus.className = 'password-status success';
           
-          // Trigger flash white effect
-          triggerFlashWhite();
-          
           // Store portfolio info for content loading
           const portfolioSlug = data.slug;
           
-          // Sequence: flash (600ms) -> iris out (instant) -> remove & show content
+          const glitchContainer = document.getElementById('glitch-container') as HTMLElement;
+          const passwordContainer = document.querySelector('.password-container') as HTMLElement;
+          const appShell = document.querySelector('.app-shell') as HTMLElement;
+          const root = document.documentElement;
           
-          // After flash white completes, iris out and transition
+          // Step 1: Flash white effect (glitch -> white -> normal)
+          triggerFlashWhite();
+          
+          // Step 2: After flash completes (600ms) + 400ms wait, trigger CRAZY random glitch
           setTimeout(() => {
-            const glitchContainer = document.getElementById('glitch-container') as HTMLElement;
-            const passwordContainer = document.querySelector('.password-container') as HTMLElement;
-            const appShell = document.querySelector('.app-shell') as HTMLElement;
+            triggerCrazyGlitch(800);
             
-            if (glitchContainer) {
-              // Iris out heading and fade out input - both animated over 500ms
-              glitchContainer.classList.add('iris-out');
+            // Step 3: After intense glitch (800ms), fade out both heading and input
+            setTimeout(() => {
+              if (glitchContainer) {
+                glitchContainer.classList.add('fade-out');
+              }
               if (passwordContainer) {
                 passwordContainer.classList.add('fade-out');
               }
               
-              // Remove app shell from DOM after animations complete (500ms)
+              // Step 4: After fade out (400ms), show overlay and redirect
               setTimeout(() => {
                 if (appShell) {
                   appShell.remove();
                   window.dispatchEvent(new CustomEvent('headerRemoved'));
                 }
                 
-                // Redirect to portfolio page
+                // SPA-style navigation: fetch and inject portfolio content
+                // This keeps the WebGL canvas alive!
                 if (portfolioSlug) {
-                  window.location.href = `/portfolio/${portfolioSlug}`;
+                  loadPortfolioInPlace(portfolioSlug);
                 }
-              }, 500);
-            }
-          }, 600);
+              }, 400);
+            }, 800);
+          }, 1000); // 600ms flash + 400ms wait
         } else {
           // Invalid password
           inputWrapper.classList.add('error');
