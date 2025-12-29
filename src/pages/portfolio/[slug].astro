@@ -1,0 +1,138 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection, render } from 'astro:content';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+// Get the portfolio content
+const portfolios = await getCollection('portfolios');
+// With glob loader, id is the filename (e.g., "test-portfolio")
+const portfolio = portfolios.find(p => p.id === slug || p.id === `${slug}.mdx`);
+
+if (!portfolio) {
+  return Astro.redirect('/');
+}
+
+const { Content } = await render(portfolio);
+const { title, client, year, role, summary } = portfolio.data;
+---
+
+<Layout title={`${title} — Patrick Banta`}>
+  <main class="portfolio-page">
+    <article class="portfolio-content">
+      <header class="portfolio-header">
+        <h1 class="portfolio-title">{title}</h1>
+        <div class="portfolio-meta">
+          <span>{client}</span>
+          <span class="divider">•</span>
+          <span>{year}</span>
+          <span class="divider">•</span>
+          <span>{role}</span>
+        </div>
+        <p class="portfolio-summary">{summary}</p>
+      </header>
+      
+      <div class="portfolio-body">
+        <Content />
+      </div>
+    </article>
+  </main>
+</Layout>
+
+<style>
+  .portfolio-page {
+    min-height: 100vh;
+    padding: 60px 24px;
+  }
+  
+  .portfolio-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .portfolio-header {
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(34, 211, 238, 0.2);
+  }
+  
+  .portfolio-title {
+    font-family: 'Berkeley Mono', 'Courier New', monospace;
+    font-size: 32px;
+    font-weight: bold;
+    color: #22d3ee;
+    margin: 0 0 16px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  
+  .portfolio-meta {
+    font-family: 'Berkeley Mono', 'Courier New', monospace;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 24px;
+  }
+  
+  .divider {
+    margin: 0 12px;
+    color: #22d3ee;
+  }
+  
+  .portfolio-summary {
+    font-size: 18px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+  }
+  
+  .portfolio-body {
+    font-size: 16px;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .portfolio-body :global(h2) {
+    font-family: 'Berkeley Mono', 'Courier New', monospace;
+    font-size: 20px;
+    font-weight: bold;
+    color: #22d3ee;
+    margin: 48px 0 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .portfolio-body :global(h2:first-child) {
+    margin-top: 0;
+  }
+  
+  .portfolio-body :global(p) {
+    margin: 0 0 16px;
+  }
+  
+  .portfolio-body :global(ul),
+  .portfolio-body :global(ol) {
+    margin: 0 0 16px;
+    padding-left: 24px;
+  }
+  
+  .portfolio-body :global(li) {
+    margin-bottom: 8px;
+  }
+  
+  .portfolio-body :global(strong) {
+    color: #22d3ee;
+  }
+  
+  @media (min-width: 768px) {
+    .portfolio-page {
+      padding: 80px 48px;
+    }
+    
+    .portfolio-title {
+      font-size: 40px;
+    }
+  }
+</style>
+

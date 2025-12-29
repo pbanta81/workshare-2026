@@ -90,7 +90,7 @@ import Layout from '../layouts/Layout.astro';
   
   /* Success transition animations */
   .password-container {
-    transition: opacity 1.5s ease-out;
+    transition: opacity 0.5s ease-out;
     margin-top: 12px;
     padding: 0 16px;
   }
@@ -322,6 +322,16 @@ import Layout from '../layouts/Layout.astro';
     }
   }
   
+  /* Iris out effect - animated */
+  .glitch-container {
+    clip-path: circle(100% at 50% 50%);
+  }
+  
+  .glitch-container.iris-out {
+    clip-path: circle(0% at 50% 50%);
+    transition: clip-path 0.5s ease-in;
+  }
+  
   /* Password Input - ANSI/Pixel Style */
   .password-container {
     display: flex;
@@ -335,7 +345,7 @@ import Layout from '../layouts/Layout.astro';
   
   .input-label {
     display: block;
-    font-family: 'Courier New', 'Consolas', monospace;
+    font-family: 'Berkeley Mono', 'Courier New', monospace;
     font-weight: bold;
     font-size: 12px;
     color: #22d3ee;
@@ -350,7 +360,7 @@ import Layout from '../layouts/Layout.astro';
     background: #0D0E11;
     border: 2px solid #22d3ee;
     padding: 0;
-    font-family: 'Courier New', 'Consolas', monospace;
+    font-family: 'Berkeley Mono', 'Courier New', monospace;
     position: relative;
   }
   
@@ -422,7 +432,7 @@ import Layout from '../layouts/Layout.astro';
   
   .password-status {
     margin-top: 12px;
-    font-family: 'Courier New', 'Consolas', monospace;
+    font-family: 'Berkeley Mono', 'Courier New', monospace;
     font-size: 12px;
     letter-spacing: 1px;
     text-align: left;
@@ -603,7 +613,7 @@ import Layout from '../layouts/Layout.astro';
   }
   
   .portfolio-title {
-    font-family: 'Courier New', 'Consolas', monospace;
+    font-family: 'Berkeley Mono', 'Courier New', monospace;
     font-size: 28px;
     font-weight: bold;
     color: #22d3ee;
@@ -613,7 +623,7 @@ import Layout from '../layouts/Layout.astro';
   }
   
   .portfolio-meta {
-    font-family: 'Courier New', 'Consolas', monospace;
+    font-family: 'Berkeley Mono', 'Courier New', monospace;
     font-size: 14px;
     color: rgba(255, 255, 255, 0.6);
     margin-bottom: 24px;
@@ -638,7 +648,7 @@ import Layout from '../layouts/Layout.astro';
   }
   
   .portfolio-body h2 {
-    font-family: 'Courier New', 'Consolas', monospace;
+    font-family: 'Berkeley Mono', 'Courier New', monospace;
     font-size: 20px;
     font-weight: bold;
     color: #22d3ee;
@@ -722,33 +732,11 @@ import Layout from '../layouts/Layout.astro';
         return;
       }
       
-      // Populate content
-      const titleEl = document.getElementById('portfolio-title');
-      const clientEl = document.getElementById('portfolio-client');
-      const yearEl = document.getElementById('portfolio-year');
-      const roleEl = document.getElementById('portfolio-role');
-      const summaryEl = document.getElementById('portfolio-summary');
       const bodyEl = document.getElementById('portfolio-body');
-      const contentEl = document.getElementById('portfolio-content');
       
-      if (titleEl) titleEl.textContent = data.frontmatter.title;
-      if (clientEl) clientEl.textContent = data.frontmatter.client;
-      if (yearEl) yearEl.textContent = data.frontmatter.year;
-      if (roleEl) roleEl.textContent = data.frontmatter.role;
-      if (summaryEl) summaryEl.textContent = data.frontmatter.summary;
-      
-      // Parse markdown body to HTML (simple conversion)
+      // Parse markdown body to HTML
       if (bodyEl && data.body) {
         bodyEl.innerHTML = parseMarkdown(data.body);
-      }
-      
-      // Show content container
-      if (contentEl) {
-        contentEl.classList.remove('hidden');
-        // Trigger reflow then add visible class for animation
-        requestAnimationFrame(() => {
-          contentEl.classList.add('visible');
-        });
       }
       
     } catch (error) {
@@ -805,7 +793,7 @@ import Layout from '../layouts/Layout.astro';
     // Create a temporary span to measure text width
     const measureSpan = document.createElement('span');
     measureSpan.style.cssText = `
-      font-family: 'Courier New', Consolas, monospace;
+      font-family: 'Berkeley Mono', 'Courier New', monospace;
       font-size: 14px;
       letter-spacing: 2px;
       visibility: hidden;
@@ -893,74 +881,36 @@ import Layout from '../layouts/Layout.astro';
           triggerFlashWhite();
           
           // Store portfolio info for content loading
-          const portfolioId = data.portfolioId;
           const portfolioSlug = data.slug;
           
-          // Sequence: flash (600ms) -> fade input (1500ms) -> move heading (2000ms)
+          // Sequence: flash (600ms) -> iris out (instant) -> remove & show content
           
-          // After flash white completes (600ms), fade out input
+          // After flash white completes, iris out and transition
           setTimeout(() => {
+            const glitchContainer = document.getElementById('glitch-container') as HTMLElement;
             const passwordContainer = document.querySelector('.password-container') as HTMLElement;
-            if (passwordContainer) {
-              passwordContainer.classList.add('fade-out');
-            }
+            const appShell = document.querySelector('.app-shell') as HTMLElement;
             
-            // After input fade completes (1500ms), move heading to top
-            setTimeout(() => {
-              const glitchContainer = document.getElementById('glitch-container') as HTMLElement;
-              if (glitchContainer) {
-                // Get current position and dimensions
-                const rect = glitchContainer.getBoundingClientRect();
-                
-                // Switch to fixed positioning at current location (takes out of document flow)
-                glitchContainer.style.position = 'fixed';
-                glitchContainer.style.top = `${rect.top}px`;
-                glitchContainer.style.left = `${rect.left}px`;
-                glitchContainer.style.width = `${rect.width}px`;
-                glitchContainer.style.zIndex = '10';
-                
-                // Now safe to remove password container (won't affect fixed element)
-                if (passwordContainer) {
-                  passwordContainer.remove();
-                }
-                
-                // Animate to final position
-                requestAnimationFrame(() => {
-                  glitchContainer.style.transition = 'top 1.5s ease-in-out';
-                  glitchContainer.style.top = '36px';
-                  
-                  // Update shader bounds during animation
-                  const updateInterval = setInterval(() => {
-                    window.dispatchEvent(new CustomEvent('headerMoved'));
-                  }, 50);
-                  
-                  // Stop updating after animation completes
-                  setTimeout(() => {
-                    clearInterval(updateInterval);
-                    window.dispatchEvent(new CustomEvent('headerMoved'));
-                    
-                    // Heading stays fixed where it is - just show content below it
-                    const contentEl = document.getElementById('portfolio-content');
-                    const bodyEl = document.getElementById('portfolio-body');
-                    
-                    if (contentEl && bodyEl) {
-                      // Position content below the fixed heading
-                      const headingBottom = glitchContainer.getBoundingClientRect().bottom;
-                      contentEl.style.paddingTop = `${headingBottom + 36}px`;
-                      
-                      // Show the content
-                      bodyEl.innerHTML = '<p style="font-size: 24px; color: #22d3ee;">test</p>';
-                      contentEl.classList.remove('hidden');
-                      requestAnimationFrame(() => {
-                        contentEl.classList.add('visible');
-                      });
-                    }
-                  }, 1600);
-                });
+            if (glitchContainer) {
+              // Iris out heading and fade out input - both animated over 500ms
+              glitchContainer.classList.add('iris-out');
+              if (passwordContainer) {
+                passwordContainer.classList.add('fade-out');
               }
               
-            }, 1500);
-            
+              // Remove app shell from DOM after animations complete (500ms)
+              setTimeout(() => {
+                if (appShell) {
+                  appShell.remove();
+                  window.dispatchEvent(new CustomEvent('headerRemoved'));
+                }
+                
+                // Redirect to portfolio page
+                if (portfolioSlug) {
+                  window.location.href = `/portfolio/${portfolioSlug}`;
+                }
+              }, 500);
+            }
           }, 600);
         } else {
           // Invalid password

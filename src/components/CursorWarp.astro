@@ -897,6 +897,12 @@
     window.addEventListener('resize', updateHeaderBounds);
     window.addEventListener('scroll', updateHeaderBounds);
     window.addEventListener('headerMoved', updateHeaderBounds);
+    
+    // Disable color sampling when header is removed
+    window.addEventListener('headerRemoved', () => {
+      headerReady = 0;
+      headerBounds = { x: 0, y: 0, width: 0, height: 0 };
+    });
 
     let startTime = Date.now();
     
