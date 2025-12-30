@@ -1,44 +1,69 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection, render } from 'astro:content';
+import { getCompanyConfig } from '../../data/companies';
 
 export const prerender = false;
 
 const { slug } = Astro.params;
 
-// Get the portfolio content
+// Get company-specific config (dynamic per password)
+const companyConfig = slug ? getCompanyConfig(slug) : null;
+
+if (!companyConfig) {
+  return Astro.redirect('/');
+}
+
+// Get shared static portfolio content (same for all companies)
 const portfolios = await getCollection('portfolios');
-const portfolio = portfolios.find(p => p.id === slug || p.id === `${slug}.mdx`);
+const portfolio = portfolios[0]; // We only have one shared portfolio
 
 if (!portfolio) {
   return Astro.redirect('/');
 }
 
 const { Content } = await render(portfolio);
+
+// Static content from MDX
 const { title, headshot, tagline, work } = portfolio.data;
+
+// Dynamic content from company config
+const { welcomeImage, welcomeCompany, color } = companyConfig;
 ---
 
 <Layout title={`${title} — Patrick Banta`}>
   <div id="page-transition-overlay"></div>
   <main class="portfolio-page">
     <div class="portfolio-page-inner">
+    <!-- Welcome Image with Glitch Effect -->
+    {welcomeImage && (
+      <section class="welcome-image">
+        <div class="welcome-glitch-container" id="welcome-glitch">
+          <img src={welcomeImage} alt="Welcome" class="welcome-img welcome-base" style="image-rendering: pixelated;" />
+          <img src={welcomeImage} alt="" class="welcome-img welcome-r" style="image-rendering: pixelated;" aria-hidden="true" />
+          <img src={welcomeImage} alt="" class="welcome-img welcome-b" style="image-rendering: pixelated;" aria-hidden="true" />
+        </div>
+        {welcomeCompany && <p class="welcome-company">{welcomeCompany}</p>}
+      </section>
+    )}
+
     <!-- Heading Section -->
     <section class="heading">
+      <div class="heading-text">
+        <h1 class="name">{title}</h1>
+        {tagline && <p class="tagline">{tagline}</p>}
+      </div>
       {headshot && (
         <div class="headshot">
           <img src={headshot} alt={title} />
         </div>
       )}
-      <div class="heading-text">
-        <h1 class="name">{title}</h1>
-        {tagline && <p class="tagline">{tagline}</p>}
-      </div>
     </section>
 
     <!-- Work Section -->
     {work && work.length > 0 && (
       <section class="work">
-        <h2 class="work-title">WORK</h2>
+        <h2 class="work-title">ROLES</h2>
         <div class="work-list">
           {work.map((job) => (
             <div class="work-item">
@@ -101,6 +126,148 @@ const { title, headshot, tagline, work } = portfolio.data;
     }
   }
 
+  /* Welcome Image */
+  .welcome-image {
+    margin: 0 auto 60px;
+    max-width: 650px;
+    opacity: 0;
+    transform: translateX(-80px);
+    animation: fadeSlideIn 0.6s ease-out forwards;
+  }
+
+  .welcome-glitch-container {
+    position: relative;
+    cursor: pointer;
+    --welcome-glitch-duration: 350ms;
+    --welcome-glitch-intensity: 18px;
+  }
+
+  .welcome-company {
+    font-family: 'Berkeley Mono', 'Courier New', monospace;
+    font-size: 18px;
+    color: #FF2F00;
+    margin: 12px 0 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .welcome-img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .welcome-r,
+  .welcome-b {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .welcome-r {
+    mix-blend-mode: screen;
+  }
+
+  .welcome-b {
+    mix-blend-mode: screen;
+  }
+
+  /* Active glitch state */
+  .welcome-glitch-container.glitching .welcome-r,
+  .welcome-glitch-container.glitching .welcome-b {
+    opacity: 0.85;
+  }
+
+  .welcome-glitch-container.glitching .welcome-r {
+    animation: welcome-glitch-r calc(var(--welcome-glitch-duration) * 0.4) steps(2) infinite;
+  }
+
+  .welcome-glitch-container.glitching .welcome-b {
+    animation: welcome-glitch-b calc(var(--welcome-glitch-duration) * 0.4) steps(2) infinite;
+  }
+
+  .welcome-glitch-container.glitching .welcome-base {
+    animation: welcome-glitch-base calc(var(--welcome-glitch-duration) * 0.5) steps(3) infinite;
+  }
+
+  /* Lime/green layer - shifts toward lime/yellow */
+  @keyframes welcome-glitch-r {
+    0% {
+      transform: translate(var(--welcome-glitch-intensity), calc(var(--welcome-glitch-intensity) * -0.3));
+      clip-path: polygon(0 15%, 100% 15%, 100% 28%, 0 28%);
+      filter: hue-rotate(25deg) saturate(2) brightness(1.2);
+    }
+    25% {
+      transform: translate(calc(var(--welcome-glitch-intensity) * -1.2), calc(var(--welcome-glitch-intensity) * 0.15));
+      clip-path: polygon(0 55%, 100% 55%, 100% 68%, 0 68%);
+      filter: hue-rotate(25deg) saturate(2) brightness(1.2);
+    }
+    50% {
+      transform: translate(calc(var(--welcome-glitch-intensity) * 0.5), calc(var(--welcome-glitch-intensity) * -0.2));
+      clip-path: polygon(0 75%, 100% 75%, 100% 90%, 0 90%);
+      filter: hue-rotate(25deg) saturate(2) brightness(1.2);
+    }
+    75% {
+      transform: translate(calc(var(--welcome-glitch-intensity) * -0.8), calc(var(--welcome-glitch-intensity) * 0.3));
+      clip-path: polygon(0 8%, 100% 8%, 100% 22%, 0 22%);
+      filter: hue-rotate(25deg) saturate(2) brightness(1.2);
+    }
+    100% {
+      transform: translate(calc(var(--welcome-glitch-intensity) * 0.9), calc(var(--welcome-glitch-intensity) * -0.25));
+      clip-path: polygon(0 40%, 100% 40%, 100% 52%, 0 52%);
+      filter: hue-rotate(25deg) saturate(2) brightness(1.2);
+    }
+  }
+
+  /* Orange/red layer - shifts toward deep orange/red */
+  @keyframes welcome-glitch-b {
+    0% {
+      transform: translate(calc(var(--welcome-glitch-intensity) * -0.6), calc(var(--welcome-glitch-intensity) * 0.3));
+      clip-path: polygon(0 65%, 100% 65%, 100% 80%, 0 80%);
+      filter: hue-rotate(-25deg) saturate(2.5) brightness(1.1);
+    }
+    25% {
+      transform: translate(calc(var(--welcome-glitch-intensity) * 0.9), calc(var(--welcome-glitch-intensity) * -0.15));
+      clip-path: polygon(0 30%, 100% 30%, 100% 42%, 0 42%);
+      filter: hue-rotate(-25deg) saturate(2.5) brightness(1.1);
+    }
+    50% {
+      transform: translate(calc(var(--welcome-glitch-intensity) * -0.75), calc(var(--welcome-glitch-intensity) * 0.2));
+      clip-path: polygon(0 2%, 100% 2%, 100% 18%, 0 18%);
+      filter: hue-rotate(-25deg) saturate(2.5) brightness(1.1);
+    }
+    75% {
+      transform: translate(calc(var(--welcome-glitch-intensity) * 0.6), calc(var(--welcome-glitch-intensity) * -0.3));
+      clip-path: polygon(0 48%, 100% 48%, 100% 62%, 0 62%);
+      filter: hue-rotate(-25deg) saturate(2.5) brightness(1.1);
+    }
+    100% {
+      transform: translate(calc(var(--welcome-glitch-intensity) * -0.9), calc(var(--welcome-glitch-intensity) * 0.15));
+      clip-path: polygon(0 82%, 100% 82%, 100% 95%, 0 95%);
+      filter: hue-rotate(-25deg) saturate(2.5) brightness(1.1);
+    }
+  }
+
+  @keyframes welcome-glitch-base {
+    0%, 100% {
+      transform: translate(0, 0) skewX(0deg);
+    }
+    20% {
+      transform: translate(calc(var(--welcome-glitch-intensity) * -0.25), 0) skewX(-0.4deg);
+    }
+    40% {
+      transform: translate(calc(var(--welcome-glitch-intensity) * 0.3), 0) skewX(0.4deg);
+    }
+    60% {
+      transform: translate(calc(var(--welcome-glitch-intensity) * -0.2), 0) skewX(-0.25deg);
+    }
+    80% {
+      transform: translate(calc(var(--welcome-glitch-intensity) * 0.2), 0) skewX(0.25deg);
+    }
+  }
+
   /* Heading Section */
   .heading {
     display: flex;
@@ -111,6 +278,7 @@ const { title, headshot, tagline, work } = portfolio.data;
     opacity: 0;
     transform: translateX(-80px);
     animation: fadeSlideIn 0.6s ease-out forwards;
+    animation-delay: 0.2s;
   }
 
   .headshot {
@@ -157,7 +325,7 @@ const { title, headshot, tagline, work } = portfolio.data;
     opacity: 0;
     transform: translateX(-80px);
     animation: fadeSlideIn 0.6s ease-out forwards;
-    animation-delay: 0.2s;
+    animation-delay: 0.4s;
   }
 
   .work-title {
@@ -277,4 +445,39 @@ const { title, headshot, tagline, work } = portfolio.data;
       }
     });
   });
+  
+  // Welcome image glitch effect
+  const welcomeGlitch = document.getElementById('welcome-glitch');
+  
+  function triggerWelcomeGlitch() {
+    if (!welcomeGlitch) return;
+    
+    welcomeGlitch.classList.add('glitching');
+    
+    // Get duration from CSS variable (or default)
+    const computedStyle = getComputedStyle(welcomeGlitch);
+    const duration = parseInt(computedStyle.getPropertyValue('--welcome-glitch-duration')) || 350;
+    
+    setTimeout(() => {
+      welcomeGlitch.classList.remove('glitching');
+    }, duration);
+  }
+  
+  if (welcomeGlitch) {
+    // Trigger glitch on click
+    welcomeGlitch.addEventListener('click', triggerWelcomeGlitch);
+    
+    // Trigger glitch once after animations complete + 1.5 seconds
+    setTimeout(triggerWelcomeGlitch, 1500);
+    
+    // Continue triggering every 8-15 seconds (random interval for organic feel)
+    function scheduleNextGlitch() {
+      const interval = 8000 + Math.random() * 7000; // 8-15 seconds
+      setTimeout(() => {
+        triggerWelcomeGlitch();
+        scheduleNextGlitch();
+      }, interval);
+    }
+    scheduleNextGlitch();
+  }
 </script>
