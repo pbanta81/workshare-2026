@@ -838,20 +838,50 @@ import Layout from '../layouts/Layout.astro';
       
       // Extract the portfolio content (main element)
       const newMain = doc.querySelector('main.portfolio-page');
-      const newStyles = doc.querySelectorAll('style');
       
       if (!newMain) {
         console.error('Could not find portfolio content');
+        // Fallback to regular navigation
+        window.location.href = `/portfolio/${slug}`;
         return;
       }
       
-      // Inject the portfolio styles (scoped styles from the page)
+      // CRITICAL: Inject ALL styles BEFORE content to prevent FOUC
+      // 1. Inject inline <style> tags (dev mode)
+      const newStyles = doc.querySelectorAll('style');
       newStyles.forEach(style => {
-        // Clone the style element and add to head
         const styleClone = style.cloneNode(true) as HTMLStyleElement;
         styleClone.setAttribute('data-portfolio-style', 'true');
         document.head.appendChild(styleClone);
       });
+      
+      // 2. Inject <link rel="stylesheet"> tags (production mode - Astro bundles CSS)
+      const newLinks = doc.querySelectorAll('link[rel="stylesheet"]');
+      const linkPromises: Promise<void>[] = [];
+      
+      newLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        // Skip if this stylesheet is already loaded
+        if (href && !document.querySelector(`link[href="${href}"]`)) {
+          const linkClone = link.cloneNode(true) as HTMLLinkElement;
+          linkClone.setAttribute('data-portfolio-style', 'true');
+          
+          // Create a promise that resolves when the stylesheet loads
+          const loadPromise = new Promise<void>((resolve) => {
+            linkClone.onload = () => resolve();
+            linkClone.onerror = () => resolve(); // Resolve anyway to not block
+            // Timeout fallback in case onload doesn't fire
+            setTimeout(resolve, 500);
+          });
+          linkPromises.push(loadPromise);
+          document.head.appendChild(linkClone);
+        }
+      });
+      
+      // Wait for all stylesheets to load before showing content
+      if (linkPromises.length > 0) {
+        await Promise.all(linkPromises);
+      }
       
       // Clone and inject the portfolio content
       const mainClone = newMain.cloneNode(true) as HTMLElement;
@@ -870,6 +900,9 @@ import Layout from '../layouts/Layout.astro';
       
       // Add the portfolio content to the body
       document.body.appendChild(mainClone);
+      
+      // Force a reflow to ensure styles are applied before animations start
+      void mainClone.offsetHeight;
       
       // Update the URL without triggering a page load
       history.pushState({ slug }, '', `/portfolio/${slug}`);
