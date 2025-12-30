@@ -84,21 +84,6 @@
         </label>
       </div>
     </div>
-    <div class="control-section" data-section="grid">
-      <h4><span>Grid</span><button class="section-toggle">−</button></h4>
-      <div class="section-content">
-        <label>
-          <span class="label-text">Base Dot Size:</span>
-          <input type="number" id="baseDotSizeVal" value="3" min="1" max="6">
-          <input type="range" id="baseDotSize" min="1" max="6" value="3">
-        </label>
-        <label>
-          <span class="label-text">Dot Roundness:</span>
-          <input type="number" id="dotRoundnessVal" value="0" min="0" max="1" step="0.1">
-          <input type="range" id="dotRoundness" min="0" max="1" value="0" step="0.1">
-        </label>
-      </div>
-    </div>
     <div class="control-section" data-section="colorpickup">
       <h4><span>Image Color Pickup</span><button class="section-toggle">−</button></h4>
       <div class="section-content">
@@ -120,7 +105,7 @@
       </div>
     </div>
     <div class="control-section" data-section="glitch">
-      <h4><span>Image Glitch</span><button class="section-toggle">−</button></h4>
+      <h4><span>Heading Glitch</span><button class="section-toggle">−</button></h4>
       <div class="section-content">
         <label>
           <span class="label-text">Duration:</span>
@@ -129,8 +114,23 @@
         </label>
         <label>
           <span class="label-text">Intensity:</span>
-          <input type="number" id="glitchIntensityVal" value="20" min="2" max="20">
-          <input type="range" id="glitchIntensity" min="2" max="20" value="20">
+          <input type="number" id="glitchIntensityVal" value="20" min="2" max="40">
+          <input type="range" id="glitchIntensity" min="2" max="40" value="20">
+        </label>
+      </div>
+    </div>
+    <div class="control-section" data-section="welcome-glitch">
+      <h4><span>Welcome Glitch</span><button class="section-toggle">−</button></h4>
+      <div class="section-content">
+        <label>
+          <span class="label-text">Duration:</span>
+          <input type="number" id="welcomeGlitchDurationVal" value="350" min="100" max="800" step="10">
+          <input type="range" id="welcomeGlitchDuration" min="100" max="800" value="350" step="10">
+        </label>
+        <label>
+          <span class="label-text">Intensity:</span>
+          <input type="number" id="welcomeGlitchIntensityVal" value="18" min="5" max="50">
+          <input type="range" id="welcomeGlitchIntensity" min="5" max="50" value="18">
         </label>
       </div>
     </div>
@@ -316,13 +316,15 @@
     rippleWidth: 366,
     rippleDuration: 0.5,
     rippleColorIntensity: 0,
-    baseDotSize: 3,
-    dotRoundness: 0,
+    baseDotSize: 3,      // Fixed (no UI control)
+    dotRoundness: 0,     // Fixed (no UI control)
     colorPickupRange: 400,
     colorVibrancy: 0.8,
     colorSoftness: 20,
     glitchDuration: 380,
     glitchIntensity: 20,
+    welcomeGlitchDuration: 350,
+    welcomeGlitchIntensity: 18,
   };
   
   // Control panel state (starts with defaults)
@@ -394,9 +396,53 @@
     
     updateGlitchVars(); // Initialize
     
+    // Welcome glitch controls (CSS-based, for portfolio page)
+    const welcomeGlitchDurationRange = document.getElementById('welcomeGlitchDuration') as HTMLInputElement;
+    const welcomeGlitchDurationNum = document.getElementById('welcomeGlitchDurationVal') as HTMLInputElement;
+    const welcomeGlitchIntensityRange = document.getElementById('welcomeGlitchIntensity') as HTMLInputElement;
+    const welcomeGlitchIntensityNum = document.getElementById('welcomeGlitchIntensityVal') as HTMLInputElement;
+    
+    function updateWelcomeGlitchVars() {
+      const duration = parseFloat(welcomeGlitchDurationRange.value);
+      const intensity = parseFloat(welcomeGlitchIntensityRange.value);
+      // Update CSS variables on the welcome glitch container if it exists
+      const welcomeGlitch = document.getElementById('welcome-glitch');
+      if (welcomeGlitch) {
+        welcomeGlitch.style.setProperty('--welcome-glitch-duration', duration + 'ms');
+        welcomeGlitch.style.setProperty('--welcome-glitch-intensity', intensity + 'px');
+      }
+      // Also set on document root for when portfolio loads
+      document.documentElement.style.setProperty('--welcome-glitch-duration', duration + 'ms');
+      document.documentElement.style.setProperty('--welcome-glitch-intensity', intensity + 'px');
+    }
+    
+    [welcomeGlitchDurationRange, welcomeGlitchIntensityRange].forEach(input => {
+      input.addEventListener('input', () => {
+        if (input === welcomeGlitchDurationRange) {
+          welcomeGlitchDurationNum.value = input.value;
+        } else {
+          welcomeGlitchIntensityNum.value = input.value;
+        }
+        updateWelcomeGlitchVars();
+      });
+    });
+    
+    [welcomeGlitchDurationNum, welcomeGlitchIntensityNum].forEach(input => {
+      input.addEventListener('input', () => {
+        if (input === welcomeGlitchDurationNum) {
+          welcomeGlitchDurationRange.value = input.value;
+        } else {
+          welcomeGlitchIntensityRange.value = input.value;
+        }
+        updateWelcomeGlitchVars();
+      });
+    });
+    
+    updateWelcomeGlitchVars(); // Initialize
+    
     const controls = [
       'hoverRadius', 'hoverFade', 'hoverMaxScale', 'repelStrength', 'colorIntensity', 'gumminess',
-      'rippleSpeed', 'rippleWidth', 'rippleDuration', 'rippleColorIntensity', 'baseDotSize', 'dotRoundness',
+      'rippleSpeed', 'rippleWidth', 'rippleDuration', 'rippleColorIntensity',
       'colorPickupRange', 'colorVibrancy', 'colorSoftness'
     ];
     
@@ -455,6 +501,13 @@
       glitchIntensityRange.value = defaults.glitchIntensity.toString();
       glitchIntensityNum.value = defaults.glitchIntensity.toString();
       updateGlitchVars();
+      
+      // Reset welcome glitch controls
+      welcomeGlitchDurationRange.value = defaults.welcomeGlitchDuration.toString();
+      welcomeGlitchDurationNum.value = defaults.welcomeGlitchDuration.toString();
+      welcomeGlitchIntensityRange.value = defaults.welcomeGlitchIntensity.toString();
+      welcomeGlitchIntensityNum.value = defaults.welcomeGlitchIntensity.toString();
+      updateWelcomeGlitchVars();
     });
   }
   
@@ -476,6 +529,8 @@
       
       uniform vec2 u_resolution;
       uniform vec2 u_mouse;
+      uniform vec2 u_mouseVelocity;
+      uniform float u_mouseSpeed;
       uniform float u_mouseActive;
       uniform float u_time;
       uniform vec2 u_clickPos;
@@ -548,20 +603,52 @@
           }
         }
         
-        // ===== REPEL EFFECT =====
-        // Calculate repel BEFORE we use cellCenter for other calculations
+        // ===== REPEL EFFECT (Comet tail via elliptical stretch) =====
+        // Stretch the repel zone behind the cursor based on movement
+        vec2 repelledCenter = cellCenter;
         float cellDist = distance(cellCenter, mouse);
         
-        // Repel: push dot away from cursor
-        vec2 repelledCenter = cellCenter;
-        if (u_repelStrength > 0.0 && cellDist < totalRadius && cellDist > 0.001) {
-          // Direction away from mouse
-          vec2 awayDir = normalize(cellCenter - mouse);
-          // Strength: stronger when closer (inverse relationship)
-          float repelFactor = 1.0 - (cellDist / totalRadius);
-          repelFactor = repelFactor * repelFactor; // Quadratic falloff
-          // Apply repel offset
-          repelledCenter = cellCenter + awayDir * u_repelStrength * repelFactor * u_mouseActive;
+        if (u_repelStrength > 0.0) {
+          // Vector from mouse to this cell
+          vec2 toCell = cellCenter - mouse;
+          
+          // Get movement direction (or arbitrary if stationary)
+          vec2 moveDir = u_mouseSpeed > 1.0 ? normalize(u_mouseVelocity) : vec2(1.0, 0.0);
+          vec2 perpDir = vec2(-moveDir.y, moveDir.x);
+          
+          // Project cell position onto movement axis and perpendicular axis
+          float alongMove = dot(toCell, moveDir);  // Positive = in front, negative = behind
+          float perpMove = dot(toCell, perpDir);   // Side distance
+          
+          // Calculate stretch factor based on speed (more speed = longer tail)
+          float stretchAmount = smoothstep(0.0, 15.0, u_mouseSpeed) * 2.5;
+          
+          // Elliptical distance: stretch BEHIND cursor (negative alongMove)
+          // Front stays circular, back stretches into tail
+          float tailStretch = 1.0;
+          if (alongMove < 0.0) {
+            // Behind cursor - stretch the effective radius
+            tailStretch = 1.0 + stretchAmount;
+          }
+          
+          // Calculate effective distance using elliptical formula
+          // Front: normal circle, Back: stretched ellipse
+          float effectiveAlongDist = alongMove / tailStretch;
+          float effectiveDist = length(vec2(effectiveAlongDist, perpMove));
+          
+          // Use effectiveDist for determining if in repel zone
+          // But use actual cellDist for the repel direction/strength
+          if (effectiveDist < totalRadius && cellDist > 0.001) {
+            vec2 awayDir = normalize(toCell);
+            float repelFactor = 1.0 - (effectiveDist / totalRadius);
+            repelFactor = repelFactor * repelFactor;
+            
+            // Slightly reduce strength in the tail region
+            float tailFade = alongMove < 0.0 ? mix(1.0, 0.7, smoothstep(0.0, totalRadius * tailStretch, -alongMove)) : 1.0;
+            
+            vec2 repelOffset = awayDir * u_repelStrength * repelFactor * tailFade;
+            repelledCenter = cellCenter + repelOffset * u_mouseActive;
+          }
         }
         
         // Distance from this PIXEL to mouse (for COLOR - smooth gradient)
@@ -734,6 +821,8 @@
     // Uniforms
     const resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
     const mouseLocation = gl.getUniformLocation(program, 'u_mouse');
+    const mouseVelocityLocation = gl.getUniformLocation(program, 'u_mouseVelocity');
+    const mouseSpeedLocation = gl.getUniformLocation(program, 'u_mouseSpeed');
     const mouseActiveLocation = gl.getUniformLocation(program, 'u_mouseActive');
     const timeLocation = gl.getUniformLocation(program, 'u_time');
     const clickPosLocation = gl.getUniformLocation(program, 'u_clickPos');
@@ -770,6 +859,13 @@
     let clickX = -9999;
     let clickY = -9999;
     let clickTime = -9999;
+    
+    // Velocity tracking for comet tail
+    let prevMouseX = -9999;
+    let prevMouseY = -9999;
+    let mouseVelX = 0;
+    let mouseVelY = 0;
+    let mouseSpeed = 0;
 
     document.addEventListener('mousemove', (e) => {
       const dpr = window.devicePixelRatio || 1;
@@ -915,11 +1011,27 @@
         mouseY += (targetMouseY - mouseY) * params.gumminess;
       }
       
+      // Calculate velocity for comet tail direction
+      const rawVelX = mouseX - prevMouseX;
+      const rawVelY = mouseY - prevMouseY;
+      const rawSpeed = Math.sqrt(rawVelX * rawVelX + rawVelY * rawVelY);
+      
+      // Smooth velocity to avoid jitter
+      mouseVelX += (rawVelX - mouseVelX) * 0.15;
+      mouseVelY += (rawVelY - mouseVelY) * 0.15;
+      mouseSpeed += (rawSpeed - mouseSpeed) * 0.1;
+      
+      // Store previous position
+      prevMouseX = mouseX;
+      prevMouseY = mouseY;
+      
       // Smoothly fade mouseActive in/out
       mouseActive += (targetMouseActive - mouseActive) * 0.08;
 
       gl!.uniform2f(resolutionLocation, canvas.width, canvas.height);
       gl!.uniform2f(mouseLocation, mouseX, mouseY);
+      gl!.uniform2f(mouseVelocityLocation, mouseVelX, mouseVelY);
+      gl!.uniform1f(mouseSpeedLocation, mouseSpeed);
       gl!.uniform1f(mouseActiveLocation, mouseActive);
       gl!.uniform1f(timeLocation, time);
       gl!.uniform2f(clickPosLocation, clickX, clickY);
